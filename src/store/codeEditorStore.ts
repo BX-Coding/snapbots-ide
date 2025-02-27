@@ -82,7 +82,19 @@ export const createCodeEditorSlice: StateCreator<
 
   // Actions
   sendLspState: () => {
-    const patchVM = get().patchVM
+    const transport = get().transportRef;
+    if (!transport) {
+      console.error("WebSocket is not initialized.");
+      return;
+    }
+    
+    // Only send if connection is open
+    if (transport.connection.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket not connected, cannot send LSP state");
+      return;
+    }
+    
+    const patchVM = get().patchVM;
     const dynamicOptions: LanguageServerState = {
       targets: patchVM
         .getAllRenderedTargets()
@@ -99,64 +111,81 @@ export const createCodeEditorSlice: StateCreator<
       apiData: patchVM.getApiInfo(),
     };
 
-    const transport = get().transportRef;
-    if (transport) {
-      const data = {
-        internalID: 1,
-        request: {
-          jsonrpc: "2.0" as const,
-          id: 1,
-          method: "workspace/didChangeConfiguration",
-          params: {
-            settings: dynamicOptions,
-          },
+    const data = {
+      internalID: 1,
+      request: {
+        jsonrpc: "2.0" as const,
+        id: 1,
+        method: "workspace/didChangeConfiguration",
+        params: {
+          settings: dynamicOptions,
         },
-      };
-      transport.sendData(data);
-    } else {
-      console.error("WebSocket is not initialized.");
-    }
+      },
+    };
+    
+    transport.sendData(data).catch(err => {
+      console.warn("Failed to send LSP state:", err);
+    });
   },
   setTransportRef: (ref) => {
-    set({ transportRef: ref })
+    set({ transportRef: ref });
 
-    const patchVM = get().patchVM
+    // Wait for WebSocket to be connected before sending data
+    const waitForConnection = (transport: WebSocketTransport, maxAttempts = 10) => {
+      let attempts = 0;
+      
+      const checkConnection = () => {
+        if (transport.connection.readyState === WebSocket.OPEN) {
+          // Connection is open, send the configuration
+          const patchVM = get().patchVM;
+          const dynamicOptions: LanguageServerState = {
+            targets: patchVM
+              .getAllRenderedTargets()
+              .filter((target: any) => !target.isStage)
+              .map((target: any) => target.getName()),
+            backdrops: patchVM.runtime
+              .getTargetForStage()
+              .sprite.costumes.map((costume: any) => costume.name),
+            costumes: patchVM.editingTarget.sprite.costumes.map(
+              (costume: any) => costume.name
+            ),
+            sounds: patchVM.editingTarget.getSounds().map((sound: any) => sound.name),
+            messages: patchVM.getAllBroadcastMessages(),
+            apiData: patchVM.getApiInfo(),
+          };
 
-    setTimeout(()=>{
-      const dynamicOptions: LanguageServerState = {
-        targets: patchVM
-          .getAllRenderedTargets()
-          .filter((target: any) => !target.isStage)
-          .map((target: any) => target.getName()),
-        backdrops: patchVM.runtime
-          .getTargetForStage()
-          .sprite.costumes.map((costume: any) => costume.name),
-        costumes: patchVM.editingTarget.sprite.costumes.map(
-          (costume: any) => costume.name
-        ),
-        sounds: patchVM.editingTarget.getSounds().map((sound: any) => sound.name),
-        messages: patchVM.getAllBroadcastMessages(),
-        apiData: patchVM.getApiInfo(),
-      };
-
-      const transport = ref;
-      if (transport) {
-        const data = {
-          internalID: 1,
-          request: {
-            jsonrpc: "2.0" as const,
-            id: 1,
-            method: "workspace/didChangeConfiguration",
-            params: {
-              settings: dynamicOptions,
+          const data = {
+            internalID: 1,
+            request: {
+              jsonrpc: "2.0" as const,
+              id: 1,
+              method: "workspace/didChangeConfiguration",
+              params: {
+                settings: dynamicOptions,
+              },
             },
-          },
-        };
-        transport.sendData(data);
-      } else {
-        console.error("WebSocket is not initialized.");
-      }
-    },3000)
+          };
+          
+          transport.sendData(data).catch(err => {
+            console.warn("Failed to send initial configuration:", err);
+          });
+        } else if (attempts < maxAttempts) {
+          // Not connected yet, try again after delay
+          attempts++;
+          setTimeout(checkConnection, 500);
+        } else {
+          // Max attempts reached, log error
+          console.error("WebSocket connection failed after multiple attempts");
+        }
+      };
+      
+      checkConnection();
+    };
+
+    // Start the connection check process
+    if (ref) {
+      waitForConnection(ref);
+    }
   },
   getTransportRef: () => get().transportRef,
   setCodemirrorRef: (id: string, ref: React.RefObject<ReactCodeMirrorRef>) =>
@@ -367,6 +396,17 @@ export const createCodeEditorSlice: StateCreator<
 
   formatCode: (threadId: string) => {   
     const transport = get().transportRef;
+    if (!transport) {
+      console.error("WebSocket is not initialized.");
+      return;
+    }
+    
+    // Only send if connection is open
+    if (transport.connection.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket not connected, cannot format code");
+      return;
+    }
+    
     const formatRequest = {
       internalID: 1,
       request: {
@@ -384,8 +424,8 @@ export const createCodeEditorSlice: StateCreator<
         },
       }
     };
-    if (transport) {
-      transport.sendData(formatRequest)
+    
+    transport.sendData(formatRequest)
       .then((event: any[] | null) => {
         if (event != null) {
           const response = JSON.parse(JSON.stringify(event[0]));
@@ -393,7 +433,9 @@ export const createCodeEditorSlice: StateCreator<
           get().setProjectChanged(true);
           get().invalidateDiagnostics(threadId);
         }
+      })
+      .catch(err => {
+        console.warn("Failed to format code:", err);
       });
-    }
   }
 });
