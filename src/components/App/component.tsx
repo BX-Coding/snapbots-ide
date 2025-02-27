@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SpritePane from "../SpritePane";
 import { Button, Grid, Tooltip } from "@mui/material";
 import "./style.css";
@@ -40,6 +41,7 @@ import { LegalDialogueButton } from "./LegalDialogueButton";
 import PatchFunctionJson from "../../assets/patch-api.json";
 
 import Popover from "@mui/material/Popover";
+import HomePage from "../HomePage";
 
 interface Parameter {
   [key: string]: string;
@@ -53,7 +55,7 @@ interface PatchFunction {
   returnType: string;
 }
 
-const App = () => {
+const PatchApp = () => {
   const setProjectChanged = usePatchStore((state) => state.setProjectChanged);
   const targetIds = usePatchStore((state) => state.targetIds);
   const patchVM = usePatchStore((state) => state.patchVM);
@@ -101,38 +103,38 @@ const App = () => {
 
   return (
     <ThemeProvider theme={mode === "dark" ? darkTheme : lightTheme}>
-        <SplashScreen renderCondition={usePatchStore((state) => state.patchReady)}>
-          <ToastContainer
-            theme="dark"
-            position="top-center"
-          />
-          <Grid container item direction="row" width={'100%'} sx={{
-            position: "absolute",
-            width: "100%",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            padding: 0,
-            margin: 0,
-            paddingBottom: "0px",
-            zIndex: -1,
-            overflowY: "auto",
-            backgroundColor: 'background.default',
-            color: "text.primary",
-          }}>
-            <ModalSelector />
-            <TopBar mode={mode} setMode={setMode} />
-            <Grid item container direction="row" className="leftContainer">
-              <Grid item className="assetHolder" sx={{
-                padding: "8px",
-                borderRightWidth: "1px",
-                borderColor: "divider",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
+      <SplashScreen renderCondition={usePatchStore((state) => state.patchReady)}>
+        <ToastContainer
+          theme="dark"
+          position="top-center"
+        />
+        <Grid container item direction="row" width={'100%'} sx={{
+          position: "absolute",
+          width: "100%",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: 0,
+          margin: 0,
+          paddingBottom: "0px",
+          zIndex: -1,
+          overflowY: "auto",
+          backgroundColor: 'background.default',
+          color: "text.primary",
+        }}>
+          <ModalSelector />
+          <TopBar mode={mode} setMode={setMode} />
+          <Grid item container direction="row" className="leftContainer">
+            <Grid item className="assetHolder" sx={{
+              padding: "8px",
+              borderRightWidth: "1px",
+              borderColor: "divider",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
             >
               <VerticalButtons>
                 <EditorTabButton
@@ -231,9 +233,23 @@ const App = () => {
         </Grid>
       </SplashScreen>
     </ThemeProvider>
-
   );
 };
+
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/app" element={<PatchApp />} />
+        <Route path="/app/*" element={<PatchApp />} />
+        {/* Redirect old paths to the new /app path */}
+        <Route path="*" element={<Navigate to="/app" replace />} />
+      </Routes>
+    </Router>
+  );
+};
+
 const useGetCodeThreadId = () =>
   usePatchStore((state) => state.getCodeThreadId());
 
