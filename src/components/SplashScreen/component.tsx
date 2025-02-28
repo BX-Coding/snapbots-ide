@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 // @ts-ignore
-import patchPenguin from "../../assets/PatchPenguin.png";
+import eucalyptusLogo from "../../assets/eucalyptusLogo.png";
 
 type SplashScreenProps = {
   renderCondition: boolean;
@@ -44,7 +44,7 @@ const PatchAnimation = () => {
         flexDirection: "column",
       }}
     >
-      <img style={{ height: "50%" }} src={patchPenguin} />
+      <img style={{ height: "50%" }} src={eucalyptusLogo} />
       <Typography
         sx={{ fontSize: "24pt", padding: "8px", color: "white" }}
       >{`${loadingText}${loadingDots}`}</Typography>

@@ -42,6 +42,7 @@ import PatchFunctionJson from "../../assets/patch-api.json";
 
 import Popover from "@mui/material/Popover";
 import HomePage from "../HomePage";
+import { SnapBotMode } from "../SnapBotMode";
 
 interface Parameter {
   [key: string]: string;
@@ -77,6 +78,15 @@ const PatchApp = () => {
   const [mode, setMode] = React.useState(
     localStorage.getItem("theme") || "dark"
   );
+  const [appMode, setAppMode] = useState(
+    localStorage.getItem("appMode") || "patch"
+  );
+
+  // Save appMode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("appMode", appMode);
+  }, [appMode]);
+
   const [projectId] = useLocalStorage("patchProjectId", "new");
   const { loadProject } = useProjectActions(projectId);
   const onVmInit = () => {
@@ -124,112 +134,121 @@ const PatchApp = () => {
           color: "text.primary",
         }}>
           <ModalSelector />
-          <TopBar mode={mode} setMode={setMode} />
-          <Grid item container direction="row" className="leftContainer">
-            <Grid item className="assetHolder" sx={{
-              padding: "8px",
-              borderRightWidth: "1px",
-              borderColor: "divider",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-            >
-              <VerticalButtons>
-                <EditorTabButton
-                  tab={EditorTab.CODE}
-                  icon={<DataObjectIcon />}
-                />
-                <EditorTabButton
-                  tab={EditorTab.COSTUMES}
-                  icon={<TheaterComedyIcon />}
-                />
-                <EditorTabButton
-                  tab={EditorTab.SOUNDS}
-                  icon={<MusicNoteIcon />}
-                />
-                <EditorTabButton
-                  tab={EditorTab.VARIABLES}
-                  icon={<PublicIcon />}
-                />
-                <Button
-                  aria-describedby={id}
-                  variant={variant}
-                  onClick={handleClick}
+          <TopBar mode={mode} setMode={setMode} appMode={appMode} setAppMode={setAppMode} />
+          
+          {appMode === "patch" ? (
+            // Full Patch Mode UI
+            <>
+              <Grid item container direction="row" className="leftContainer">
+                <Grid item className="assetHolder" sx={{
+                  padding: "8px",
+                  borderRightWidth: "1px",
+                  borderColor: "divider",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
                 >
-                  <ArticleOutlinedIcon />
-                </Button>
-                <Popover
-                  id={id}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "left",
-                  }}
-                >
-                  {apiData.map((value) => {
-                    const parameterNames = Object.keys(value.parameters).join(
-                      ", "
-                    );
-                    const functionNameWithParams = `${value.name}(${parameterNames})`;
-                    return (
-                      <>
-                        <Typography key={value.name} sx={{ px: 4, py: 2 }}>
-                          <Typography variant="h6" sx={{ color: "white" }}>
-                            {functionNameWithParams}
-                          </Typography>
-                          {Object.entries(value.parameters).map(
-                            ([paramName, paramType]) => (
-                              <div
-                                key={paramName}
-                                style={{ color: "lightgrey" }}
-                              >{`${paramName}: ${paramType}`}</div>
-                            )
-                          )}
-                          <small>
-                            <code style={{ color: "lightgreen" }}>
-                              {value.exampleUsage}
-                            </code>
-                          </small>
-                          <br />
-                          <small>{value.description}</small>
-                          <br></br>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              backgroundColor: "lightblue",
-                              color: "#636363",
-                              mt: 1,
-                              fontWeight: "bold",
-                            }}
-                            onClick={() => {
-                              console.log("Need to implement");
-                              handleClose();
-                              appendFunc(`${value.exampleUsage}`);
-                            }}
-                          >
-                            Add to Editor <ArrowForwardIcon />
-                          </Button>
-                        </Typography>
-                        <hr></hr>
-                      </>
-                    );
-                  })}
-                </Popover>
-              </VerticalButtons>
-              <LegalDialogueButton />
-            </Grid>
-            <Grid item xs>
-              <EditorPane />
-            </Grid>
-          </Grid>
-          <Grid item className="rightContainer">
-            <GamePane />
-            <SpritePane />
-          </Grid>
+                  <VerticalButtons>
+                    <EditorTabButton
+                      tab={EditorTab.CODE}
+                      icon={<DataObjectIcon />}
+                    />
+                    <EditorTabButton
+                      tab={EditorTab.COSTUMES}
+                      icon={<TheaterComedyIcon />}
+                    />
+                    <EditorTabButton
+                      tab={EditorTab.SOUNDS}
+                      icon={<MusicNoteIcon />}
+                    />
+                    <EditorTabButton
+                      tab={EditorTab.VARIABLES}
+                      icon={<PublicIcon />}
+                    />
+                    <Button
+                      aria-describedby={id}
+                      variant={variant}
+                      onClick={handleClick}
+                    >
+                      <ArticleOutlinedIcon />
+                    </Button>
+                    <Popover
+                      id={id}
+                      open={open}
+                      anchorEl={anchorEl}
+                      onClose={handleClose}
+                      anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "left",
+                      }}
+                    >
+                      {apiData.map((value) => {
+                        const parameterNames = Object.keys(value.parameters).join(
+                          ", "
+                        );
+                        const functionNameWithParams = `${value.name}(${parameterNames})`;
+                        return (
+                          <>
+                            <Typography key={value.name} sx={{ px: 4, py: 2 }}>
+                              <Typography variant="h6" sx={{ color: "white" }}>
+                                {functionNameWithParams}
+                              </Typography>
+                              {Object.entries(value.parameters).map(
+                                ([paramName, paramType]) => (
+                                  <div
+                                    key={paramName}
+                                    style={{ color: "lightgrey" }}
+                                  >{`${paramName}: ${paramType}`}</div>
+                                )
+                              )}
+                              <small>
+                                <code style={{ color: "lightgreen" }}>
+                                  {value.exampleUsage}
+                                </code>
+                              </small>
+                              <br />
+                              <small>{value.description}</small>
+                              <br></br>
+                              <Button
+                                variant="contained"
+                                sx={{
+                                  backgroundColor: "lightblue",
+                                  color: "#636363",
+                                  mt: 1,
+                                  fontWeight: "bold",
+                                }}
+                                onClick={() => {
+                                  console.log("Need to implement");
+                                  handleClose();
+                                  appendFunc(`${value.exampleUsage}`);
+                                }}
+                              >
+                                Add to Editor <ArrowForwardIcon />
+                              </Button>
+                            </Typography>
+                            <hr></hr>
+                          </>
+                        );
+                      })}
+                    </Popover>
+                  </VerticalButtons>
+                  <LegalDialogueButton />
+                </Grid>
+                <Grid item xs>
+                  <EditorPane />
+                </Grid>
+              </Grid>
+              <Grid item className="rightContainer">
+                <GamePane />
+                <SpritePane />
+              </Grid>
+            </>
+          ) : (
+            // SnapBot Mode - Now using the dedicated component
+            <SnapBotMode />
+          )}
         </Grid>
       </SplashScreen>
     </ThemeProvider>

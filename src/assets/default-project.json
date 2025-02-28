@@ -19,44 +19,6 @@
           ],
           "sounds": [],
           "blocks": {}
-        },
-        {
-          "isStage": false,
-          "name": "Patch",
-          "variables": {},
-          "lists": {},
-          "broadcasts": {},
-          "blocks": {},
-          "comments": {},
-          "currentCostume": 0,
-          "costumes": [
-            {
-              "name": "patch-a",
-              "bitmapResolution": 1,
-              "dataFormat": "svg",
-              "assetId": "1043567ec098626025aa6d776ffd947c",
-              "md5ext": "1043567ec098626025aa6d776ffd947c.svg",
-              "rotationCenterX": 48,
-              "rotationCenterY": 50
-            }
-          ],
-          "sounds": [],
-          "volume": 100,
-          "layerOrder": 1,
-          "visible": true,
-          "x": 0,
-          "y": 0,
-          "size": 100,
-          "direction": 90,
-          "draggable": false,
-          "rotationStyle": "all around",
-          "threads": [
-            {
-              "script": "while True:\n  changeGraphicEffectBy('color', 25)",
-              "triggerEventId": "event_whenflagclicked",
-              "triggerEventOption": ""
-            }
-          ]
         }
       ],
       "extensions": [],

@@ -6,7 +6,8 @@ import Grid from '@mui/material/Grid';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { DarkMode } from '@mui/icons-material';
 import BiotechIcon from '@mui/icons-material/Biotech';
-
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { HorizontalButtons, TextButton, IconButton } from '../PatchButton';
 import usePatchStore from '../../store';
@@ -125,9 +126,11 @@ function BetaInfoIcon({ isBetaUser }: BetaInfoIconProps) {
 type TopBarProps = {
   mode: string,
   setMode: (mode: string) => void,
+  appMode: string,
+  setAppMode: (mode: string) => void,
 }
 
-export function TopBar({ mode, setMode }: TopBarProps) {
+export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
   const {user, userMeta, loading, error} = useUser();
 
   const nonBetaTesterTip = "You are not currently a beta tester.";
@@ -136,14 +139,23 @@ export function TopBar({ mode, setMode }: TopBarProps) {
   const loggedIn = !!user;
   const isBetaUser = loggedIn && (userMeta?.role === UserRole.BETA_TESTER || userMeta?.role === UserRole.ADMIN);
 
+  const handleAppModeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newMode: string,
+  ) => {
+    if (newMode !== null) {
+      setAppMode(newMode);
+    }
+  };
+
   return (
     <Grid container item direction="row" sx={{
-      width: "100vw",
+      width: "100%",
       padding: "8px",
       maxHeight: "56px",
       backgroundColor: 'primary.dark',
     }}>
-      <Grid container item direction="row" xs={8} spacing={2} className="patchTopBar">
+      {/* <Grid container item direction="row" xs={3} spacing={2} className="patchTopBar">
         <Grid item>
           <HorizontalButtons>
               <IconButton sx={{ height: "40px", borderStyle: "solid", borderWidth: "1px", borderColor: "primary.light" }} icon={<GitHubIcon />} onClick={() => {window.location.href = 'https://github.com/BX-Coding/patch-ide'}} variant="contained" />
@@ -151,13 +163,27 @@ export function TopBar({ mode, setMode }: TopBarProps) {
               <SaveButton/>
           </HorizontalButtons>
         </Grid>
-        <Grid item xs={6}>
-          <FileName />
-        </Grid>
+      </Grid> */}
+      <Grid container item justifyContent="center" alignItems="center">
+        <ToggleButtonGroup
+          value={appMode}
+          exclusive
+          onChange={handleAppModeChange}
+          aria-label="app mode"
+          sx={{ height: "40px" }}
+        >
+          <ToggleButton value="patch" aria-label="patch mode" sx={{ color: 'text.primary' }}>
+            Patch Mode
+          </ToggleButton>
+          <ToggleButton value="snapbot" aria-label="snapbot mode" sx={{ color: 'text.primary' }}>
+            SnapBot Mode
+          </ToggleButton>
+        </ToggleButtonGroup>
       </Grid>
-      <Grid container item xs={4} justifyContent="flex-end">
+      {/* <Grid container item xs={3} justifyContent="flex-end">
         <Grid item>
           <HorizontalButtons>
+            <ThemeButton mode={mode} setMode={setMode} />
             { loggedIn && <FeatureWrapper show={!isBetaUser} message={fullBetaExplainer}>
               <BetaInfoIcon isBetaUser={isBetaUser}/>
             </FeatureWrapper>}
@@ -169,7 +195,7 @@ export function TopBar({ mode, setMode }: TopBarProps) {
             {!loggedIn && <SignUpButton />}
           </HorizontalButtons>
         </Grid>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 }

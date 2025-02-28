@@ -2,13 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./style.css";
 // Use a placeholder image until you have the actual logo
-const logo = require("../../assets/eucalytpusLogo.png");
+const logo = require("../../assets/eucalyptusLogo.png");
 
 const HomePage = () => {
   return (
     <div>
       <header className="homepage-header">
-        {/* You'll need to create a Header component or replace this */}
         <nav>
           <div className="logo-small">Project Eucalyptus</div>
           <div className="nav-links">
@@ -29,7 +28,24 @@ const HomePage = () => {
           </span>
           Project Eucalyptus
         </h1>
-      </div>
+      
+    
+            <section>
+                <p>This is a Tufts capstone project for the 2024-25 year.</p>
+            </section>
+
+            <section>
+                <h2>Team</h2>
+                <ul>
+                    <li>Dan Patterson</li>
+                    <li>Duncan Johnson</li>
+                    <li>Eddy Abban</li>
+                    <li>Jahnea Potts</li>
+                    <li>Nasir Wynruit</li>
+                    <li>Dr. Ethan Danahy</li>
+                </ul>
+            </section>
+        </div>
     </div>
   );
 };
