@@ -10,7 +10,7 @@
  */
 export async function sendImageForProcessing(base64Image: string, generationId: string) {
     // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/generation`, {
+    const response = await fetch(`/api/modal/generation.js`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export async function sendImageForProcessing(base64Image: string, generationId: 
  */
 export async function retrieveGeneratedCode(generationId: string) {
     // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/retrieve-code?generation_id=${generationId}`, {
+    const response = await fetch(`/api/modal/retrieve-code.js?generation_id=${generationId}`, {
         method: 'GET',
     });
 
@@ -65,7 +65,7 @@ export async function retrieveGeneratedCode(generationId: string) {
  */
 export async function retrieveFunctionNames(generationId: string) {
     // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/retrieve-names?generation_id=${generationId}`, {
+    const response = await fetch(`/api/modal/retrieve-names.js?generation_id=${generationId}`, {
         method: 'GET',
     });
 
