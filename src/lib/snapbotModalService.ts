@@ -9,7 +9,7 @@
  * @returns The response from the server
  */
 export async function sendImageForProcessing(base64Image: string, generationId: string) {
-    // Use the proxy endpoint instead of the direct Modal endpoint
+    // Use the API route which works in both development and production
     const response = await fetch(`/api/modal/generation`, {
         method: 'POST',
         headers: {
@@ -40,7 +40,7 @@ export async function sendImageForProcessing(base64Image: string, generationId: 
  * @returns The generated code
  */
 export async function retrieveGeneratedCode(generationId: string) {
-    // Use the proxy endpoint instead of the direct Modal endpoint
+    // Use the API route which works in both development and production
     const response = await fetch(`/api/modal/retrieve-code?generation_id=${generationId}`, {
         method: 'GET',
     });
@@ -64,7 +64,7 @@ export async function retrieveGeneratedCode(generationId: string) {
  * @returns The list of available function names
  */
 export async function retrieveFunctionNames(generationId: string) {
-    // Use the proxy endpoint instead of the direct Modal endpoint
+    // Use the API route which works in both development and production
     const response = await fetch(`/api/modal/retrieve-names?generation_id=${generationId}`, {
         method: 'GET',
     });

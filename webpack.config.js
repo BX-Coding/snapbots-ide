@@ -19,7 +19,19 @@ export default {
     port: 8080,
     historyApiFallback: true,
     proxy: {
-      '/api/modal': {
+      '/api/modal/generation': {
+        target: 'https://eucalyptus--simulation-endpoint.modal.run/',
+        pathRewrite: { '^/api/modal': '' },
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/modal/retrieve-code': {
+        target: 'https://eucalyptus--simulation-endpoint.modal.run/',
+        pathRewrite: { '^/api/modal': '' },
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/modal/retrieve-names': {
         target: 'https://eucalyptus--simulation-endpoint.modal.run/',
         pathRewrite: { '^/api/modal': '' },
         changeOrigin: true,
