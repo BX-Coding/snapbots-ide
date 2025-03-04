@@ -7,17 +7,23 @@
       "config": {
         "distDir": "build"
       }
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/modal/generation",
+      "destination": "https://eucalyptus--simulation-endpoint.modal.run/generation"
     },
     {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "source": "/api/modal/retrieve-code",
+      "destination": "https://eucalyptus--simulation-endpoint.modal.run/retrieve-code"
+    },
+    {
+      "source": "/api/modal/retrieve-names",
+      "destination": "https://eucalyptus--simulation-endpoint.modal.run/retrieve-names"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
     {
       "handle": "filesystem"
     },
