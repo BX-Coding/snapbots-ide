@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, CircularProgress } from '@mui/material';
+import { Box, Button, Typography, CircularProgress, Stepper, Step, StepLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAddSprite } from "./onAddSpriteHandler";
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { snapbotStorage } from '../../lib/snapbotFirebase';
+import { 
+    sendImageForProcessing, 
+    retrieveGeneratedCode, 
+    retrieveFunctionNames, 
+    parseCodeFromResponse, 
+    convertFileToBase64 
+} from '../../lib/snapbotModalService';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
@@ -14,7 +21,12 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [activeStep, setActiveStep] = useState(0);
+    const [processingStatus, setProcessingStatus] = useState('');
     const { onAddSprite, setSnapbotSpriteCode } = useAddSprite();
+
+    // Steps for the stepper
+    const steps = ['Upload Image', 'Process Image', 'Generate Code', 'Create Sprite'];
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -41,6 +53,8 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
 
         setUploading(true);
         setError(null);
+        setActiveStep(1);
+        setProcessingStatus('Uploading image to storage...');
 
         const storageRef = ref(snapbotStorage, `uploads/${Date.now()}_${selectedFile.name}`);
         
@@ -49,29 +63,65 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
         
         console.log('File uploaded successfully:', downloadURL);
 
-        
-
         try {
+            setProcessingStatus('Creating new sprite...');
             const newTargetId = await onAddSprite();
             
             if (newTargetId) {
-                // For now, just log that code was generated
-                console.log("Code generated for Snapbot sprite: turnLeft(10)");
+                // Default code in case generation fails
+                const defaultCode = `turnLeft(10) \nsay("${downloadURL}")`;
 
-                const code = `turnLeft(10) \nsay("${downloadURL}")`;
+                // Convert the image file to base64
+                setProcessingStatus('Converting image for processing...');
+                const base64Image = await convertFileToBase64(selectedFile);
 
-                
-                
-                // Here you would actually process the image and generate code
-                // Then update the sprite's code with the generated code
+                // Step 1: Send the image to the generation endpoint
+                setActiveStep(2);
+                setProcessingStatus('Sending image to Modal server for processing...');
+                try {
+                    await sendImageForProcessing(base64Image, newTargetId);
+                    
+                    // Optional: Retrieve available function names
+                    try {
+                        setProcessingStatus('Retrieving available functions...');
+                        const functionNames = await retrieveFunctionNames(newTargetId);
+                        console.log('Available functions:', functionNames);
+                    } catch (error) {
+                        console.warn('Failed to retrieve function names:', error);
+                    }
 
-                await setSnapbotSpriteCode(newTargetId, code);
-                
-                onClose();
+                    // Step 2: Retrieve the generated code
+                    setProcessingStatus('Retrieving generated code...');
+                    const codeResult = await retrieveGeneratedCode(newTargetId);
+                    console.log('Retrieved code:', codeResult);
+
+                    // Use the generated code or fallback to the default
+                    let generatedCode = defaultCode;
+                    if (codeResult && codeResult.status === 'success') {
+                        const parsedCode = parseCodeFromResponse(codeResult);
+                        if (parsedCode) {
+                            generatedCode = parsedCode;
+                        }
+                    }
+
+                    // Step 3: Set the code for the Snapbot sprite
+                    setActiveStep(3);
+                    setProcessingStatus('Applying generated code to sprite...');
+                    console.log('Setting code for Snapbot sprite:', generatedCode);
+                    await setSnapbotSpriteCode(newTargetId, generatedCode);
+                    
+                    onClose();
+                } catch (error) {
+                    console.error('Error with Modal server:', error);
+                    // Fallback to default code if Modal server fails
+                    setProcessingStatus('Using default code (Modal server error)...');
+                    await setSnapbotSpriteCode(newTargetId, defaultCode);
+                    onClose();
+                }
             }
         } catch (error) {
             console.error('Error creating Snapbot sprite:', error);
-            setError('Failed to create Snapbot sprite. Please try again.');
+            setError(`Failed to create Snapbot sprite: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setUploading(false);
         }
@@ -94,12 +144,14 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 Upload an image to create a sprite with generated code.
             </Typography>
             
-            <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                style={{ marginBottom: '15px' }}
-            />
+            {!uploading && (
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    style={{ marginBottom: '15px' }}
+                />
+            )}
 
             {imagePreview && (
                 <Box sx={{ my: 2 }}>
@@ -115,22 +167,33 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 </Box>
             )}
 
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCreateSnapbotSprite}
-                disabled={!selectedFile || uploading}
-                sx={{ mt: 2 }}
-            >
-                {uploading ? (
-                    <>
+            {uploading && (
+                <Box sx={{ width: '100%', my: 3 }}>
+                    <Stepper activeStep={activeStep}>
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
                         <CircularProgress size={24} sx={{ mr: 1 }} />
-                        Creating...
-                    </>
-                ) : (
-                    'Create Snapbot Sprite'
-                )}
-            </Button>
+                        <Typography>{processingStatus}</Typography>
+                    </Box>
+                </Box>
+            )}
+
+            {!uploading && (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCreateSnapbotSprite}
+                    disabled={!selectedFile || uploading}
+                    sx={{ mt: 2 }}
+                >
+                    Create Snapbot Sprite
+                </Button>
+            )}
 
             {error && (
                 <Typography color="error" sx={{ mt: 2 }}>

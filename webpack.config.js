@@ -15,6 +15,18 @@ export default {
     path: path.join(__dirname, "/build"),
   },
   mode: "development",
+  devServer: {
+    port: 8080,
+    historyApiFallback: true,
+    proxy: {
+      '/api/modal': {
+        target: 'https://eucalyptus--simulation-endpoint.modal.run/',
+        pathRewrite: { '^/api/modal': '' },
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  },
   module: {
     rules: [
       // Still using babel loader for js files only to support funky CodeMirror component see BXC-210
