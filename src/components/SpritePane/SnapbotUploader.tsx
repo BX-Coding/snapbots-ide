@@ -6,8 +6,6 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { snapbotStorage } from '../../lib/snapbotFirebase';
 import { 
     sendImageForProcessing, 
-    retrieveGeneratedCode, 
-    retrieveFunctionNames, 
     parseCodeFromResponse, 
     convertFileToBase64 
 } from '../../lib/snapbotModalService';
@@ -79,26 +77,11 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 setActiveStep(2);
                 setProcessingStatus('Sending image to Modal server for processing...');
                 try {
-                    await sendImageForProcessing(base64Image, newTargetId);
-                    
-                    // Optional: Retrieve available function names
-                    try {
-                        setProcessingStatus('Retrieving available functions...');
-                        const functionNames = await retrieveFunctionNames(newTargetId);
-                        console.log('Available functions:', functionNames);
-                    } catch (error) {
-                        console.warn('Failed to retrieve function names:', error);
-                    }
-
-                    // Step 2: Retrieve the generated code
-                    setProcessingStatus('Retrieving generated code...');
-                    const codeResult = await retrieveGeneratedCode(newTargetId);
-                    console.log('Retrieved code:', codeResult);
-
+                    let generatedCode = await sendImageForProcessing(base64Image, newTargetId);
+    
                     // Use the generated code or fallback to the default
-                    let generatedCode = defaultCode;
-                    if (codeResult && codeResult.status === 'success') {
-                        const parsedCode = parseCodeFromResponse(codeResult);
+                    if (generatedCode && generatedCode.status === 'success') {
+                        const parsedCode = parseCodeFromResponse(generatedCode);
                         if (parsedCode) {
                             generatedCode = parsedCode;
                         }
@@ -107,7 +90,6 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                     // Step 3: Set the code for the Snapbot sprite
                     setActiveStep(3);
                     setProcessingStatus('Applying generated code to sprite...');
-                    console.log('Setting code for Snapbot sprite:', generatedCode);
                     await setSnapbotSpriteCode(newTargetId, generatedCode);
                     
                     onClose();

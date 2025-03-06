@@ -27,59 +27,12 @@ export async function sendImageForProcessing(base64Image: string, generationId: 
     }
 
     const result = await response.json();
+
     if (result.status === 'failure') {
         throw new Error(`Generation failed: ${result.error}`);
     }
 
     return result;
-}
-
-/**
- * Retrieves the generated code for a given generation ID
- * @param generationId The ID of the generation
- * @returns The generated code
- */
-export async function retrieveGeneratedCode(generationId: string) {
-    // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/retrieve-code.js?generation_id=${generationId}`, {
-        method: 'GET',
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Code retrieval failed with status: ${response.status}. Details: ${errorText}`);
-    }
-
-    const result = await response.json();
-    if (result.status === 'failure') {
-        throw new Error(`Code retrieval failed: ${result.error}`);
-    }
-
-    return result;
-}
-
-/**
- * Retrieves the available function names for a given generation ID
- * @param generationId The ID of the generation
- * @returns The list of available function names
- */
-export async function retrieveFunctionNames(generationId: string) {
-    // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/retrieve-names.js?generation_id=${generationId}`, {
-        method: 'GET',
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Names retrieval failed with status: ${response.status}. Details: ${errorText}`);
-    }
-
-    const result = await response.json();
-    if (result.status === 'failure') {
-        throw new Error(`Names retrieval failed: ${result.error}`);
-    }
-
-    return result.names || [];
 }
 
 /**
@@ -92,38 +45,36 @@ export function parseCodeFromResponse(codeResult: any): string {
         return '';
     }
 
-    // Handle different response formats
-    if (typeof codeResult.code === 'string') {
-        return codeResult.code;
-    }
-
-    // If code is an object with a 'code' property
-    if (typeof codeResult.code === 'object' && codeResult.code.code) {
-        return codeResult.code.code;
-    }
+    let generatedCode = '';
 
     // If code is an object with a 'to_dict' method result
-    if (typeof codeResult.code === 'object' && codeResult.code.context) {
+    if (typeof codeResult.code === 'object' && codeResult.code.context && 
+        codeResult.code.primitives && codeResult.code.game_loop) {
         // This is likely the result of the to_dict() method in the Python code
         // We need to extract the actual code from the context
         try {
+            // Extract primitives
+            generatedCode += "### Primitives ###\n\n";
+            for (const primitive of codeResult.code.primitives) {
+                generatedCode += primitive + "\n\n";
+            }
+
+            generatedCode += "### Generated Code ###\n\n";
             // Join all the code snippets from the context
             const codeSnippets = Object.values(codeResult.code.context || {});
             if (Array.isArray(codeSnippets) && codeSnippets.length > 0) {
-                return codeSnippets.join('\n');
+                generatedCode += codeSnippets.join('\n');
             }
+
+            generatedCode += "\n\n### Game Loop ###\n\n";
+            // Add the game loop code
+            generatedCode += codeResult.code.game_loop;
         } catch (e) {
             console.error('Error parsing code from context:', e);
         }
     }
 
-    // Fallback: stringify the entire code object
-    try {
-        return JSON.stringify(codeResult.code);
-    } catch (e) {
-        console.error('Error stringifying code:', e);
-        return '';
-    }
+    return generatedCode;
 }
 
 /**
