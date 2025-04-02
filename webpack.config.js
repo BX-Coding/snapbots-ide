@@ -20,8 +20,14 @@ export default {
     historyApiFallback: true,
     proxy: {
       '/api/modal/generation.js': {
-        target: 'https://eucalyptus--simulation-endpoint.modal.run/',
+        target: 'https://eucalyptus--snapbot-simulation.modal.run/',
         pathRewrite: { '^/api/modal/generation.js': '/generation' },
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/modal/generation': {
+        target: 'https://eucalyptus--snapbot-simulation.modal.run/',
+        pathRewrite: { '^/api/modal/generation': '/generation' },
         changeOrigin: true,
         secure: false,
       }

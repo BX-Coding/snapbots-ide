@@ -2,13 +2,31 @@
  * Utility functions for interacting with the Snapbot Modal server
  */
 
+import { randomBytes } from "crypto";
+
 /**
  * Sends an image to the Modal server for processing
  * @param base64Image Base64-encoded image data (without the data URL prefix)
- * @param generationId Unique ID for this generation
+ * @param characters Optional list of character names
+ * @param globalVars Optional dictionary of global variables
  * @returns The response from the server
  */
-export async function sendImageForProcessing(base64Image: string, generationId: string) {
+export async function sendImageForProcessing(
+    base64Image: string, 
+    characters: string[] = [], 
+    globalVars: Record<string, any> = { current_message: "none" }
+) {
+    // Generate integer UUID for the diagram
+    const uuid = Math.floor(Math.random() * 10000000000000000);
+
+    // print out the body
+    console.log(JSON.stringify({
+        image: base64Image,
+        uuid: uuid,
+        characters: characters,
+        global_vars: globalVars
+    }));
+
     // Use the API route which works in both development and production
     const response = await fetch(`/api/modal/generation.js`, {
         method: 'POST',
@@ -17,7 +35,9 @@ export async function sendImageForProcessing(base64Image: string, generationId: 
         },
         body: JSON.stringify({
             image: base64Image,
-            generation_id: generationId,
+            uuid: uuid,
+            characters: characters,
+            global_vars: globalVars
         }),
     });
 
@@ -37,41 +57,49 @@ export async function sendImageForProcessing(base64Image: string, generationId: 
 
 /**
  * Parses the code from the Modal server response
- * @param codeResult The response from the Modal server
+ * @param codeObj The code response from the Modal server
  * @returns The parsed code as a string
  */
-export function parseCodeFromResponse(codeResult: any): string {
-    if (!codeResult || !codeResult.code) {
+export function parseCodeFromResponse(codeObj: any): string {
+    if (!codeObj) {
         return '';
     }
 
-    let generatedCode = '';
-
-    // If code is an object with a 'to_dict' method result
-    if (typeof codeResult.code === 'object' && codeResult.code.context && 
-        codeResult.code.primitives && codeResult.code.game_loop) {
-        // This is likely the result of the to_dict() method in the Python code
-        // We need to extract the actual code from the context
-        try {
-            // Extract primitives
-            generatedCode += "### Primitives ###\n\n";
-            for (const primitive of codeResult.code.primitives) {
-                generatedCode += primitive + "\n\n";
-            }
-
-            generatedCode += "### Generated Code ###\n\n";
-            // Join all the code snippets from the context
-            const codeSnippets = Object.values(codeResult.code.context || {});
-            if (Array.isArray(codeSnippets) && codeSnippets.length > 0) {
-                generatedCode += codeSnippets.join('\n');
-            }
-
-            generatedCode += "\n\n### Game Loop ###\n\n";
-            // Add the game loop code
-            generatedCode += codeResult.code.game_loop;
-        } catch (e) {
-            console.error('Error parsing code from context:', e);
+    let generatedCode = ''; 
+    
+    // Process primitives
+    if (Array.isArray(codeObj.primitives) || typeof codeObj.primitives === 'object') {
+        generatedCode += "### Primitives ###\n\n";
+        const primitives = Array.isArray(codeObj.primitives) 
+            ? codeObj.primitives 
+            : Object.values(codeObj.primitives);
+            
+        for (const primitive of primitives) {
+            generatedCode += primitive + "\n\n";
         }
+    }
+
+    // Process context (state functions)
+    if (codeObj.context) {
+        generatedCode += "### Generated Code ###\n\n";
+        const contextCode = typeof codeObj.context === 'object' 
+            ? Object.values(codeObj.context) 
+            : [codeObj.context];
+            
+        generatedCode += contextCode.join('\n\n');
+    }
+
+    // Process game loop
+    if (codeObj.game_loop) {
+        generatedCode += "\n\n### Game Loop ###\n\n";
+        const gameLoopCode = typeof codeObj.game_loop === 'object' 
+            ? Object.values(codeObj.game_loop)[0] 
+            : codeObj.game_loop;
+
+        generatedCode += gameLoopCode;
+
+        // call game_loop() at the end of the code
+        generatedCode += "\n\ngame_loop()\n";
     }
 
     return generatedCode;

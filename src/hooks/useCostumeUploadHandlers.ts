@@ -12,7 +12,7 @@ export const useCostumeHandlers = () => {
         const costumes = Array.isArray(costume) ? costume : [costume];
     
         var returnval = await Promise.all(costumes.map(c => {
-            return addCostume(fromCostumeLibrary ? c.md5ext : c.md5 ?? '', c, targetId);
+            return addCostume(fromCostumeLibrary ? c.md5ext : c.md5 ?? '', c);
         }));
     
         return returnval;
@@ -52,6 +52,7 @@ export const useCostumeHandlers = () => {
         if (!editingTarget) {
             return;
         }
+        console.log("Adding costumes to editing target", costumes, fromCostumeLibrary, editingTarget.id);
         handleNewCostume(costumes, fromCostumeLibrary, editingTarget.id);
     }
 

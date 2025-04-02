@@ -42,6 +42,7 @@ export const useSoundHandlers = () => {
     };
 
     const handleAddSoundToEditingTarget = (sound: Sound | SoundJson, fromLibrary: boolean) => {
+        console.log("Adding sound to editing target", sound, fromLibrary);
         addSound(fromLibrary ? {...sound, md5: sound.md5ext} : sound);
     }
 

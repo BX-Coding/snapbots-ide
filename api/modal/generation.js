@@ -9,8 +9,11 @@ export default async function handler(req, res) {
     // Get the request body
     const body = req.body;
     
+    // Get the Modal endpoint from environment variables
+    const modalEndpoint = process.env.SNAPBOT_MODAL_ENDPOINT || 'https://eucalyptus--snapbot-simulation.modal.run/';
+    
     // Forward the request to the Modal server
-    const modalResponse = await fetch('https://eucalyptus--simulation-endpoint.modal.run/generation', {
+    const modalResponse = await fetch(`${modalEndpoint}generation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

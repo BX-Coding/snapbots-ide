@@ -65,34 +65,39 @@ export const useAddSprite = () => {
       return;
     }
     
+    console.log("Target found:", target);
+
+
     // Get the codeEditorStore functions
     const codeEditorStore = usePatchStore.getState();
     
     // First, add a thread to the target using the codeEditorStore's addThread function
     // This is an async operation, so we need to wait for it to complete
     await codeEditorStore.addThread(target);
+
+    codeEditorStore.setCodeThreadId(target.id);
     
     // Now that the thread has been added, we can get its ID
     const threadIds = Object.keys(target.threads);
     const threadId = threadIds[threadIds.length - 1];
     
-      if (!threadId) {
-        console.error("Failed to create thread for target:", targetId);
-        return;
-      }
-      
-      console.log("Created thread with ID:", threadId);
-      
-      // Update the thread with the generated code
-      codeEditorStore.updateThread(threadId, code);
-      
-      // Save the thread to ensure it's compiled
-      codeEditorStore.saveThread(threadId);
-      
-      // Set this as the active thread
-      codeEditorStore.setCodeThreadId(threadId);
-      
-      console.log("Thread updated with code:", code);
+    if (!threadId) {
+      console.error("Failed to create thread for target:", targetId);
+      return;
+    }
+    
+    console.log("Created thread with ID:", threadId);
+    
+    // Update the thread with the generated code
+    codeEditorStore.updateThread(threadId, code);
+    
+    // Save the thread to ensure it's compiled
+    codeEditorStore.saveThread(threadId);
+    
+    // Set this as the active thread
+    codeEditorStore.setCodeThreadId(threadId);
+    
+    console.log("Thread updated with code:", code);
   }
 
   return {onAddSprite, handleUploadedSprite, setSnapbotSpriteCode};
