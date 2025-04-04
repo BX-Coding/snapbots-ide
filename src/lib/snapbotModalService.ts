@@ -115,7 +115,7 @@ export async function sendImageForProcessing(
         console.log(`Using ${mode} mode for generation request`);
 
         // Use the mode-specific endpoint
-        const endpoint = `/api/modal/${mode}`;
+        const endpoint = `/api/modal/${mode}.js`;
         console.log(`Using endpoint: ${endpoint}`);
 
         const response = await fetch(endpoint, {
