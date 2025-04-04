@@ -19,6 +19,18 @@ export default {
     port: 8080,
     historyApiFallback: true,
     proxy: {
+      '/api/modal/simulation': {
+        target: 'https://eucalyptus--snapbot-simulation.modal.run/',
+        pathRewrite: { '^/api/modal/simulation': '/generation' },
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/modal/hybrid': {
+        target: 'https://eucalyptus--snapbot-hybrid.modal.run/',
+        pathRewrite: { '^/api/modal/hybrid': '/generation' },
+        changeOrigin: true,
+        secure: false,
+      },
       '/api/modal/generation.js': {
         target: 'https://eucalyptus--snapbot-simulation.modal.run/',
         pathRewrite: { '^/api/modal/generation.js': '/generation' },

@@ -8,6 +8,10 @@ import { DarkMode } from '@mui/icons-material';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Box from '@mui/material/Box';
 
 import { HorizontalButtons, TextButton, IconButton } from '../PatchButton';
 import usePatchStore from '../../store';
@@ -26,6 +30,7 @@ import { UserRole } from '../../types/userMeta';
 import { Avatar, Button, Tooltip } from '@mui/material';
 import { FeatureWrapper } from '../FeatureWrapper';
 import { FileDropDown } from './FileDropDown';
+import { useSnapbotMode } from '../../contexts/SnapbotModeContext';
 
 type ThemeButtonProps = {
   mode: string,
@@ -132,6 +137,7 @@ type TopBarProps = {
 
 export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
   const {user, userMeta, loading, error} = useUser();
+  const { mode: snapbotMode, setMode: setSnapbotMode } = useSnapbotMode();
 
   const nonBetaTesterTip = "You are not currently a beta tester.";
   const fullBetaExplainer = nonBetaTesterTip + " Click here to join the Patch Discord and become a beta tester."
@@ -146,6 +152,10 @@ export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
     if (newMode !== null) {
       setAppMode(newMode);
     }
+  };
+
+  const handleSnapbotModeChange = (event: SelectChangeEvent) => {
+    setSnapbotMode(event.target.value);
   };
 
   return (
@@ -179,6 +189,24 @@ export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
             SnapBot Mode
           </ToggleButton>
         </ToggleButtonGroup>
+        
+        {appMode === "snapbot" && (
+          <Box sx={{ ml: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="snapbot-mode-label" sx={{ color: 'text.primary' }}>SnapBot Mode</InputLabel>
+              <Select
+                labelId="snapbot-mode-label"
+                value={snapbotMode}
+                label="SnapBot Mode"
+                onChange={handleSnapbotModeChange}
+                sx={{ height: "40px", color: 'text.primary' }}
+              >
+                <MenuItem value="simulation">Simulation-Only</MenuItem>
+                <MenuItem value="hybrid">Simulation-Physical Hybrid</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        )}
       </Grid>
       {/* <Grid container item xs={3} justifyContent="flex-end">
         <Grid item>

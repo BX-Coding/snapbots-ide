@@ -15,10 +15,12 @@ import { sounds } from "../../assets/sounds";
 import { useCostumeHandlers } from "../../hooks/useCostumeUploadHandlers";
 import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
 import { useEditingTarget } from "../../hooks/useEditingTarget";
+import { get } from 'http';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
 }
+
 
 export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -34,6 +36,8 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const setProjectChanged = usePatchStore((state) => state.setProjectChanged);
     const { handleAddSoundToEditingTarget } = useSoundHandlers();
     const { handleAddCostumesToEditingTarget } = useCostumeHandlers();
+    const setCostumes = usePatchStore((state) => state.setCostumes);
+    const setSelectedCostumeIndex = usePatchStore((state) => state.setSelectedCostumeIndex);
     // Steps for the stepper
     const steps = ['Upload Image', 'Process Image', 'Generate Code', 'Create Sprite'];
 
@@ -98,13 +102,28 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
 
                 // Send the image to the generation endpoint
                 setActiveStep(2);
-                setProcessingStatus('Modal server processing...');
+                const snapbotMode = localStorage.getItem("snapbotMode") || "simulation";
+                setProcessingStatus(`Processing with ${snapbotMode} mode...`);
+
+                const TESTING_MODE = false;
+
                 try {
-                    let serverResponse = await sendImageForProcessing(
-                        base64Image, 
-                        spriteNames,
-                        globalVarsMap
-                    );
+                    let serverResponse = null;
+                    if (!TESTING_MODE) {
+                        serverResponse = await sendImageForProcessing(
+                            base64Image, 
+                            spriteNames,
+                            globalVarsMap
+                        );
+                    } else {
+                        serverResponse = {
+                            status: 'success',
+                            code: 'turnLeft(10) \nsay("${downloadURL}")',
+                            costumes: ['elephant-a', 'elephant-b'],
+                            sounds: ['C2 Bass'],
+                            name: 'Snapbot Sprite',
+                        };
+                    }
 
                     console.log(serverResponse);
 
@@ -135,6 +154,9 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                         if (serverResponse.costumes && serverResponse.costumes.length > 0) {
                             setProcessingStatus('Adding costumes to sprite...');
                             
+                            // Create an array of promises for adding costumes
+                            const costumePromises = [];
+                            
                             for (const costumeName of serverResponse.costumes) {
                                 try {
                                     console.log(`Adding costume: ${costumeName}`);
@@ -145,7 +167,8 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                                     
                                     if (costumeAsset) {
                                         console.log(`Found costume ${costumeName} in library`);
-                                        await handleAddCostumesToEditingTarget([costumeAsset], true);
+                                        // Add to promises instead of awaiting immediately
+                                        costumePromises.push(handleAddCostumesToEditingTarget([costumeAsset], true));
                                     } else {
                                         console.error(`Costume not found: ${costumeName}`);
                                     }
@@ -153,6 +176,12 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                                     console.error(`Failed to add costume ${costumeName}:`, error);
                                 }
                             }
+                            
+                            setSelectedCostumeIndex(patchVM.editingTarget.currentCostume);
+                            // remove the first costume from the editing target
+                            patchVM.editingTarget.sprite.costumes.splice(0, 1);
+                            console.log("Editing target costumes after operations:", patchVM.editingTarget.sprite.costumes);
+
                         }
                         
                         // Add sounds if available

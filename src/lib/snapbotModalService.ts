@@ -3,57 +3,9 @@
  */
 
 import { randomBytes } from "crypto";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-/**
- * Sends an image to the Modal server for processing
- * @param base64Image Base64-encoded image data (without the data URL prefix)
- * @param characters Optional list of character names
- * @param globalVars Optional dictionary of global variables
- * @returns The response from the server
- */
-export async function sendImageForProcessing(
-    base64Image: string, 
-    characters: string[] = [], 
-    globalVars: Record<string, any> = { current_message: "none" }
-) {
-    // Generate integer UUID for the diagram
-    const uuid = Math.floor(Math.random() * 10000000000000000);
 
-    // print out the body
-    console.log(JSON.stringify({
-        image: base64Image,
-        uuid: uuid,
-        characters: characters,
-        global_vars: globalVars
-    }));
-
-    // Use the API route which works in both development and production
-    const response = await fetch(`/api/modal/generation.js`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            image: base64Image,
-            uuid: uuid,
-            characters: characters,
-            global_vars: globalVars
-        }),
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Generation request failed with status: ${response.status}. Details: ${errorText}`);
-    }
-
-    const result = await response.json();
-
-    if (result.status === 'failure') {
-        throw new Error(`Generation failed: ${result.error}`);
-    }
-
-    return result;
-}
 
 /**
  * Parses the code from the Modal server response
@@ -122,4 +74,70 @@ export function convertFileToBase64(file: File): Promise<string> {
         };
         reader.onerror = error => reject(error);
     });
-} 
+}
+
+// Get the current SnapBot mode from localStorage
+export function getSnapbotMode(): string {
+    const mode = localStorage.getItem("snapbotMode");
+    return mode || "simulation"; // Default to simulation if not set
+}
+
+// Get the appropriate endpoint URL based on the current mode
+export function getEndpointUrl(): string {
+    const mode = getSnapbotMode();
+    
+    if (mode === "hybrid") {
+        return process.env.SNAPBOT_HYBRID_MODAL_ENDPOINT || "https://eucalyptus--snapbot-hybrid.modal.run/";
+    } else {
+        // Default to simulation endpoint
+        return process.env.SNAPBOT_SIMULATION_MODAL_ENDPOINT || "https://eucalyptus--snapbot-simulation.modal.run/";
+    }
+}
+
+/**
+ * Sends an image to the Modal server for processing
+ * @param base64Image Base64-encoded image data (without the data URL prefix)
+ * @param characters Optional list of character names
+ * @param globalVars Optional dictionary of global variables
+ * @returns The response from the server
+ */
+export async function sendImageForProcessing(
+    base64Image: string, 
+    characters: string[] = [], 
+    globalVars: Record<string, any> = { current_message: "none" }
+) {
+    try {
+        // Generate integer UUID for the diagram
+        const uuid = Math.floor(Math.random() * 10000000000000000);
+
+        const mode = getSnapbotMode();
+        
+        console.log(`Using ${mode} mode for generation request`);
+
+        // Use the mode-specific endpoint
+        const endpoint = `/api/modal/${mode}`;
+        console.log(`Using endpoint: ${endpoint}`);
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image: base64Image,
+                uuid: uuid,
+                characters: characters,
+                global_vars: globalVars,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error sending image for processing:', error);
+        throw error;
+    }
+};

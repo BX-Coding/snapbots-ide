@@ -1,4 +1,4 @@
-// Serverless function to proxy requests to the Modal server
+// Serverless function to proxy requests to the Modal server - maintains backward compatibility
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -9,27 +9,38 @@ export default async function handler(req, res) {
     // Get the request body
     const body = req.body;
     
-    // Get the Modal endpoint from environment variables
-    const modalEndpoint = process.env.SNAPBOT_MODAL_ENDPOINT || 'https://eucalyptus--snapbot-simulation.modal.run/';
+    console.log("Request body mode:", body.mode);
     
-    // Forward the request to the Modal server
-    const modalResponse = await fetch(`${modalEndpoint}generation`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': 'https://snapbot.vercel.app'
-      },
-      body: JSON.stringify(body),
-    });
-
-    // Check if the response is JSON
-    const contentType = modalResponse.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await modalResponse.json();
-      return res.status(modalResponse.status).json(data);
+    // Determine which endpoint to use based on the mode
+    let modalEndpoint;
+    if (body.mode === 'hybrid') {
+      // For hybrid mode, redirect to the hybrid API endpoint
+      console.log("Redirecting to hybrid endpoint");
+      return fetch(`${req.headers.get('x-forwarded-proto') || 'http'}://${req.headers.host}/api/modal/hybrid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }).then(response => {
+        return response.json().then(data => {
+          return res.status(response.status).json(data);
+        });
+      });
     } else {
-      const text = await modalResponse.text();
-      return res.status(modalResponse.status).send(text);
+      // For simulation mode or default, redirect to the simulation API endpoint
+      console.log("Redirecting to simulation endpoint");
+      return fetch(`${req.headers.get('x-forwarded-proto') || 'http'}://${req.headers.host}/api/modal/simulation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }).then(response => {
+        return response.json().then(data => {
+          return res.status(response.status).json(data);
+        });
+      });
     }
   } catch (error) {
     console.error('Error proxying to Modal server:', error);
