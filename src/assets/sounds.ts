@@ -4376,3 +4376,24 @@ export const sounds: SoundJson[] = [
         "rate": 44100
     }
 ]
+
+/**
+ * Filters the sounds array to return only non-ADPCM audio files.
+ * @returns An array of SoundJson objects that don't use ADPCM format
+ */
+export const getNonAdpcmSounds = (): SoundJson[] => {
+  return sounds.filter(sound => sound.dataFormat !== "adpcm");
+};
+
+/**
+ * Gets names and tags of sounds with sample rate of 44100Hz
+ * @returns A string containing the names and tags of qualifying sounds
+ */
+export const getSoundsWithRate44100 = (): string => {
+  const rate44100Sounds = sounds.filter(sound => sound.rate === 44100);
+  
+  return rate44100Sounds.map(sound => {
+    const tags = sound.tags.length > 0 ? sound.tags.join(", ") : "no tags";
+    return `Name: ${sound.name}\nTags: ${tags}\n`;
+  }).join("\n");
+};

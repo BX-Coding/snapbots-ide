@@ -1,0 +1,462 @@
+Name: A Bass
+Tags: music, instruments, notes
+
+Name: A Elec Bass
+Tags: music, instruments, notes
+
+Name: A Elec Guitar
+Tags: music, instruments, notes
+
+Name: A Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: A Guitar
+Tags: music, instruments, notes
+
+Name: A Minor Ukulele
+Tags: music, instruments, notes, chords
+
+Name: A Piano
+Tags: music, instruments, notes
+
+Name: A Sax
+Tags: music, instruments, notes
+
+Name: A Trumpet
+Tags: music, instruments, notes
+
+Name: Alien Creak1
+Tags: effects, space
+
+Name: Alien Creak2
+Tags: effects, space
+
+Name: B Bass
+Tags: music, instruments, notes
+
+Name: B Elec Bass
+Tags: music, instruments, notes
+
+Name: B Elec Guitar
+Tags: music, instruments, notes
+
+Name: B Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: B Guitar
+Tags: music, instruments, notes
+
+Name: B Piano
+Tags: music, instruments, notes
+
+Name: B Sax
+Tags: music, instruments, notes
+
+Name: B Trombone
+Tags: music, instruments, notes
+
+Name: B Trumpet
+Tags: music, instruments, notes
+
+Name: Beat Box1
+Tags: music, human, voice, hiphop
+
+Name: Beat Box2
+Tags: music, human, voice, hiphop
+
+Name: Bell Toll
+Tags: effects, dramatic
+
+Name: C Bass
+Tags: music, instruments, notes
+
+Name: C Elec Bass
+Tags: music, instruments, notes
+
+Name: C Elec Guitar
+Tags: music, instruments, notes
+
+Name: C Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: C Guitar
+Tags: music, instruments, notes
+
+Name: C Major Ukulele
+Tags: music, instruments, notes, chords
+
+Name: C Piano
+Tags: music, instruments, notes
+
+Name: C Sax
+Tags: music, instruments, notes
+
+Name: C Trombone
+Tags: music, instruments, notes
+
+Name: C Trumpet
+Tags: music, instruments, notes
+
+Name: C2 Bass
+Tags: music, instruments, notes
+
+Name: C2 Elec Bass
+Tags: music, instruments, notes
+
+Name: C2 Elec Guitar
+Tags: music, instruments, notes
+
+Name: C2 Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: C2 Piano
+Tags: music, instruments, notes
+
+Name: C2 Trombone
+Tags: music, instruments, notes
+
+Name: C2 Trumpet
+Tags: music, instruments, notes
+
+Name: Car Passing
+Tags: transportation, ambience, background
+
+Name: Chee Chee
+Tags: animals, monkey
+
+Name: Chill
+Tags: loops, music, electronic, chill
+
+Name: Chomp
+Tags: effects, human
+
+Name: Chord
+Tags: music, electronic
+
+Name: Clapping
+Tags: human
+
+Name: Classical Piano
+Tags: loops, music, classical, bach
+
+Name: Computer Beep2
+Tags: effects, electronic
+
+Name: Cough1
+Tags: human
+
+Name: Cough2
+Tags: human
+
+Name: Cricket
+Tags: animals, insects, bugs
+
+Name: Crickets
+Tags: animals, insects, bugs, ambience, background
+
+Name: Cymbal Crash
+Tags: music, percussion
+
+Name: Cymbal Echo
+Tags: music, loops, hiphop
+
+Name: D Bass
+Tags: music, instruments, notes
+
+Name: D Elec Bass
+Tags: music, instruments, notes
+
+Name: D Elec Guitar
+Tags: music, instruments, notes
+
+Name: D Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: D Guitar
+Tags: music, instruments, notes
+
+Name: D Piano
+Tags: music, instruments, notes
+
+Name: D Sax
+Tags: music, instruments, notes
+
+Name: D Trombone
+Tags: music, instruments, notes
+
+Name: D Trumpet
+Tags: music, instruments, notes
+
+Name: Dance Energetic
+Tags: loops, music, electronic, EDM
+
+Name: Dog1
+Tags: animals
+
+Name: Dog2
+Tags: animals
+
+Name: Door Creak
+Tags: effects, home
+
+Name: Drive Around
+Tags: music, loops, electronic
+
+Name: Drum Buzz
+Tags: music, electronic, percussion
+
+Name: Drum Jam
+Tags: music, loops, percussion
+
+Name: Drum Satellite
+Tags: music, loops, percussion
+
+Name: Duck
+Tags: animals
+
+Name: E Bass
+Tags: music, instruments, notes
+
+Name: E Elec Bass
+Tags: music, instruments, notes
+
+Name: E Elec Guitar
+Tags: music, instruments, notes
+
+Name: E Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: E Guitar
+Tags: music, instruments, notes
+
+Name: E Piano
+Tags: music, instruments, notes
+
+Name: E Sax
+Tags: music, instruments, notes
+
+Name: E Trombone
+Tags: music, instruments, notes
+
+Name: Elec Piano A Minor
+Tags: music, notes, instruments
+
+Name: Elec Piano C Major
+Tags: music, notes, instruments
+
+Name: Elec Piano F Major
+Tags: music, notes, instruments
+
+Name: Elec Piano G Major
+Tags: music, notes, instruments
+
+Name: Elec Piano Loop
+Tags: music, notes, instruments, loops
+
+Name: Emotional Piano
+Tags: loops, music, chill, calm
+
+Name: F Bass
+Tags: music, instruments, notes
+
+Name: F Elec Bass
+Tags: music, instruments, notes
+
+Name: F Elec Guitar
+Tags: music, instruments, notes
+
+Name: F Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: F Guitar
+Tags: music, instruments, notes
+
+Name: F Major Ukulele
+Tags: music, instruments, notes, chords
+
+Name: F Piano
+Tags: music, instruments, notes
+
+Name: F Trombone
+Tags: music, instruments, notes
+
+Name: F Trumpet
+Tags: music, instruments, notes
+
+Name: Finger Snap
+Tags: effects, percussion, human
+
+Name: Footsteps
+Tags: effects, human
+
+Name: G Bass
+Tags: music, instruments, notes
+
+Name: G Elec Bass
+Tags: music, instruments, notes
+
+Name: G Elec Guitar
+Tags: music, instruments, notes
+
+Name: G Elec Piano
+Tags: music, note, piano, keyboard
+
+Name: G Guitar
+Tags: music, instruments, notes
+
+Name: G Piano
+Tags: music, instruments, notes
+
+Name: G Trombone
+Tags: music, instruments, notes
+
+Name: G Trumpet
+Tags: music, instruments, notes
+
+Name: G Ukulele
+Tags: music, instruments, notes, chords
+
+Name: Gong
+Tags: music, percussion
+
+Name: Goose
+Tags: animals, birds
+
+Name: Guitar Strum
+Tags: music, instruments, chords
+
+Name: Hand Clap
+Tags: human, percussion
+
+Name: Hi Na Tabla
+Tags: drums, instrument, percussion
+
+Name: Hi Tun Tabla
+Tags: drums, instrument, percussion
+
+Name: High Conga
+Tags: drums, instrument, percussion
+
+Name: Hihat Beatbox
+Tags: human, percussion, music, hiphop
+
+Name: Horse
+Tags: animals, effects
+
+Name: Laugh1
+Tags: human, voice
+
+Name: Laugh2
+Tags: human, voice
+
+Name: Laugh3
+Tags: human, voice
+
+Name: Lo Geh Tabla
+Tags: drums, instrument, percussion
+
+Name: Lo Gliss Tabla
+Tags: drums, instrument, percussion
+
+Name: Low Conga
+Tags: drums, instrument, percussion
+
+Name: Meow
+Tags: animals, cat
+
+Name: Meow2
+Tags: animals, cat
+
+Name: Motorcycle Passing
+Tags: transportation, ambience, background
+
+Name: Movie 1
+Tags: loops, music, cinematic
+
+Name: Muted Conga
+Tags: drums, instrument, percussion
+
+Name: Party Noise
+Tags: human, voice, ambience, background
+
+Name: Plunge
+Tags: effects, water, splash
+
+Name: Reggae
+Tags: loops, music
+
+Name: Ride Cymbal
+Tags: music, percussion, drums
+
+Name: Ripples
+Tags: effects, water
+
+Name: Scratchy Beat
+Tags: music, loops, hiphop
+
+Name: Scream1
+Tags: human, voice
+
+Name: Scream2
+Tags: human, voice
+
+Name: Shaker
+Tags: music, percussion
+
+Name: Singer1
+Tags: human, voice, vocals, music
+
+Name: Singer2
+Tags: human, voice, vocals, music
+
+Name: Snap
+Tags: music, percussion, drums
+
+Name: Sneeze1
+Tags: human, voice
+
+Name: Sneeze2
+Tags: voice, human
+
+Name: Spiral
+Tags: space, effects, electronic
+
+Name: Spooky String
+Tags: effects, dramatic
+
+Name: Squawk
+Tags: animals, birds
+
+Name: String Accent
+Tags: effects, music
+
+Name: String Pluck
+Tags: effects, music, instruments
+
+Name: Suspense
+Tags: effects, music, dramatic
+
+Name: Tambura
+Tags: effects, music, instruments
+
+Name: Tap Conga
+Tags: drums, instrument, percussion
+
+Name: Trap Beat
+Tags: loops, music, electronic, EDM
+
+Name: Trumpet1
+Tags: notes, music, instruments
+
+Name: Trumpet2
+Tags: notes, music, instruments
+
+Name: Whoop
+Tags: effects, electronic, space
+
+Name: Ya
+Tags: voice, hiphop
+
+Name: Zoop
+Tags: effects, electronic, space
+
