@@ -21,25 +21,13 @@ export default {
     proxy: {
       '/api/modal/simulation': {
         target: 'https://eucalyptus--snapbot-simulation.modal.run/',
-        pathRewrite: { '^/api/modal/simulation': '/generation' },
+        pathRewrite: { '^/api/modal/simulation.js': '/generation' },
         changeOrigin: true,
         secure: false,
       },
       '/api/modal/hybrid': {
         target: 'https://eucalyptus--snapbot-hybrid.modal.run/',
-        pathRewrite: { '^/api/modal/hybrid': '/generation' },
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/modal/generation.js': {
-        target: 'https://eucalyptus--snapbot-simulation.modal.run/',
-        pathRewrite: { '^/api/modal/generation.js': '/generation' },
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/modal/generation': {
-        target: 'https://eucalyptus--snapbot-simulation.modal.run/',
-        pathRewrite: { '^/api/modal/generation': '/generation' },
+        pathRewrite: { '^/api/modal/hybrid.js': '/generation' },
         changeOrigin: true,
         secure: false,
       }
