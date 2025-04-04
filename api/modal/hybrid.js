@@ -1,4 +1,4 @@
-// Serverless function to proxy requests to the Hybrid Modal server
+// Serverless function to proxy requests to the Simulation Modal server
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -10,37 +10,64 @@ export default async function handler(req, res) {
     const body = req.body;
     
     console.log("Processing hybrid mode request");
+    console.log("Request body:", JSON.stringify(body).substring(0, 200) + "..."); // Truncate for log readability
     
-    // Get the hybrid endpoint from environment variables
+    // Get the simulation endpoint from environment variables
     const modalEndpoint = process.env.SNAPBOT_HYBRID_MODAL_ENDPOINT;
     
     if (!modalEndpoint) {
+      console.error("Missing SNAPBOT_HYBRID_MODAL_ENDPOINT environment variable");
       return res.status(500).json({ 
-        error: 'Hybrid endpoint not configured',
+        error: 'Simulation endpoint not configured',
         details: 'Missing SNAPBOT_HYBRID_MODAL_ENDPOINT environment variable'
       });
     }
 
-    console.log("Using hybrid endpoint:", modalEndpoint);
+    console.log("Using simulation endpoint:", modalEndpoint);
     
-    // Forward the request to the Modal server
-    const modalResponse = await fetch(`${modalEndpoint}generation`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': 'https://snapbot.vercel.app'
-      },
-      body: JSON.stringify(body),
-    });
+    // Ensure the endpoint ends with a slash if needed
+    const formattedEndpoint = modalEndpoint.endsWith('/') ? modalEndpoint : modalEndpoint + '/';
+    const generationUrl = `${formattedEndpoint}generation`;
+    
+    console.log("Full generation URL:", generationUrl);
+    
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
+    try {
+      // Forward the request to the Modal server
+      const modalResponse = await fetch(generationUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Origin': 'https://snapbot.vercel.app'
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId); // Clear the timeout if the request completes
 
-    // Check if the response is JSON
-    const contentType = modalResponse.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await modalResponse.json();
-      return res.status(modalResponse.status).json(data);
-    } else {
-      const text = await modalResponse.text();
-      return res.status(modalResponse.status).send(text);
+      // Check if the response is JSON
+      const contentType = modalResponse.headers.get('content-type');
+      console.log("Response status:", modalResponse.status, "Content-Type:", contentType);
+      
+      if (contentType && contentType.includes('application/json')) {
+        const data = await modalResponse.json();
+        return res.status(modalResponse.status).json(data);
+      } else {
+        const text = await modalResponse.text();
+        console.error("Non-JSON response:", text.substring(0, 200) + "..."); // Truncate for log readability
+        return res.status(modalResponse.status).send(text);
+      }
+    } catch (fetchError) {
+      clearTimeout(timeoutId); // Ensure timeout is cleared
+      if (fetchError.name === 'AbortError') {
+        console.error('Request to Modal server timed out after 60 seconds');
+        return res.status(504).json({ error: 'Request to Modal server timed out', details: 'The request to the Modal server took too long to complete' });
+      }
+      throw fetchError; // Re-throw for the outer catch block
     }
   } catch (error) {
     console.error('Error proxying to Hybrid Modal server:', error);
