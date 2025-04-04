@@ -128,6 +128,7 @@ export async function sendImageForProcessing(
                 uuid: uuid,
                 characters: characters,
                 global_vars: globalVars,
+                mode: mode,
             }),
         });
 
