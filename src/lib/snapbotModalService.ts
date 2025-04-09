@@ -97,18 +97,20 @@ export function getEndpointUrl(): string {
 /**
  * Sends an image to the Modal server for processing
  * @param base64Image Base64-encoded image data (without the data URL prefix)
- * @param uuid string targetId for the sprite
+ * @param targetId string targetId for the sprite
  * @param characters Optional list of character names
  * @param globalVars Optional dictionary of global variables
  * @returns The response from the server
  */
 export async function sendImageForProcessing(
     base64Image: string, 
-    uuid: string,
+    targetId: string,
     characters: string[] = [], 
     globalVars: Record<string, any> = { current_message: "none" },
 ) {
     try {
+        // make random integer uuid
+        const uuid = Math.floor(Math.random() * 1000000);
 
         const mode = getSnapbotMode();
         
