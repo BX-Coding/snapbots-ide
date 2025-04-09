@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Grid, Box } from "@mui/material";
 import { GamePane } from "../GamePane";
 import { HorizontalButtons } from "../PatchButton";
 import { StartButton, StopButton } from "../GamePane/ControlButton";
 import { SimplifiedSpritePane } from "../SpritePane/SimplifiedSpritePane";
+import { ImageDisplay } from "../ImageDisplay";
 
 export const SnapBotMode = () => {
+  // State to control which image to display
+  const [currentImageKey, setCurrentImageKey] = useState<string | undefined>(undefined);
+
   return (
     <Grid container direction="column" sx={{ height: '100%', position: 'relative'  }}>
       {/* Centered buttons at the top */}
@@ -45,6 +49,25 @@ export const SnapBotMode = () => {
         }}
       >
         <SimplifiedSpritePane />
+      </Grid>
+      
+      {/* Image Display component positioned under the sprite pane and to the left of the game pane */}
+      <Grid 
+        item 
+        sx={{ 
+          position: 'absolute',
+          top: 350,
+          left: 50,
+          margin: 0,
+          padding: 0,
+          zIndex: 1
+        }}
+      >
+        <ImageDisplay 
+          imageKey={currentImageKey} 
+          width={300} 
+          height={250} 
+        />
       </Grid>
       
       {/* Game pane positioned at top right */}

@@ -15,10 +15,21 @@ import { sounds } from "../../assets/sounds";
 import { useCostumeHandlers } from "../../hooks/useCostumeUploadHandlers";
 import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
 import { useEditingTarget } from "../../hooks/useEditingTarget";
-import { get } from 'http';
+import { addImageToSprite, setDisplayImage } from '../../components/ImageDisplay';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
+}
+
+// Define the server response type
+interface ServerResponse {
+    status: string;
+    code?: string;
+    costumes?: string[];
+    sounds?: string[];
+    name?: string;
+    global_vars?: Record<string, any>;
+    diagram_images?: Record<string, string>; // Map of state names to base64 images
 }
 
 
@@ -106,13 +117,14 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 const snapbotMode = localStorage.getItem("snapbotMode") || "simulation";
                 setProcessingStatus(`Processing with ${snapbotMode} mode...`);
 
-                const TESTING_MODE = true;
+                const TESTING_MODE = false;
 
                 try {
-                    let serverResponse = null;
+                    let serverResponse: ServerResponse | null = null;
                     if (!TESTING_MODE) {
                         serverResponse = await sendImageForProcessing(
                             base64Image, 
+                            newTargetId,
                             spriteNames,
                             globalVarsMap
                         );
@@ -126,6 +138,10 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                             global_vars: {
                                 "test": 1,
                                 "test2": "test2",
+                            },
+                            diagram_images: {
+                                "state1": "data:image/png;base64,...",
+                                "state2": "data:image/png;base64,..."
                             }
                         };
                     }
@@ -142,6 +158,38 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                         }
                     }
 
+                    // Process diagram images if available
+                    if (serverResponse && 
+                        serverResponse.status === 'success' && 
+                        serverResponse.diagram_images && 
+                        Object.keys(serverResponse.diagram_images).length > 0) {
+                        
+                        setProcessingStatus('Processing diagram images...');
+                        
+                        // Add all images to the image display for the new sprite
+                        const stateNames = Object.keys(serverResponse.diagram_images);
+                        stateNames.forEach(stateName => {
+                            // Check if the image is already a data URL or needs the prefix
+                            let base64Image = serverResponse?.diagram_images![stateName] || "";
+                            if (!base64Image.startsWith('data:')) {
+                                base64Image = "data:image/png;base64," + base64Image;
+                            }
+                            
+                            if (base64Image) {
+                                // Use addImageToSprite to ensure the images are associated with the correct target
+                                addImageToSprite(newTargetId, stateName, base64Image);
+                            }
+                        });
+                        
+                        // Set the first image as the currently displayed one
+                        if (stateNames.length > 0) {
+                            const firstStateName = stateNames[0];
+                            
+                            // Pass both targetId and imageKey to setDisplayImage
+                            setDisplayImage(newTargetId, firstStateName);
+                        }
+                    }
+                    
                     // Set the code for the Snapbot sprite
                     setActiveStep(3);
                     setProcessingStatus('Applying generated code to sprite...');
