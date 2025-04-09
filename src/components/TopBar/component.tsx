@@ -165,16 +165,16 @@ export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
       maxHeight: "56px",
       backgroundColor: 'primary.dark',
     }}>
-      {/* <Grid container item direction="row" xs={3} spacing={2} className="patchTopBar">
+      <Grid container item direction="row" xs={3} spacing={2} className="patchTopBar">
         <Grid item>
           <HorizontalButtons>
-              <IconButton sx={{ height: "40px", borderStyle: "solid", borderWidth: "1px", borderColor: "primary.light" }} icon={<GitHubIcon />} onClick={() => {window.location.href = 'https://github.com/BX-Coding/patch-ide'}} variant="contained" />
+              {/* <IconButton sx={{ height: "40px", borderStyle: "solid", borderWidth: "1px", borderColor: "primary.light" }} icon={<GitHubIcon />} onClick={() => {window.location.href = 'https://github.com/BX-Coding/patch-ide'}} variant="contained" /> */}
               <FileDropDown cloudEnabled={isBetaUser}/>
-              <SaveButton/>
+              {/* <SaveButton/> */}
           </HorizontalButtons>
         </Grid>
-      </Grid> */}
-      <Grid container item justifyContent="center" alignItems="center">
+      </Grid>
+      <Grid container item direction="row" xs={6} justifyContent="center" alignItems="center">
         <ToggleButtonGroup
           value={appMode}
           exclusive

@@ -109,9 +109,6 @@ export async function sendImageForProcessing(
     globalVars: Record<string, any> = { current_message: "none" },
 ) {
     try {
-        // make random integer uuid
-        const uuid = Math.floor(Math.random() * 1000000);
-
         const mode = getSnapbotMode();
         
         console.log(`Using ${mode} mode for generation request`);
@@ -127,7 +124,7 @@ export async function sendImageForProcessing(
             },
             body: JSON.stringify({
                 image: base64Image,
-                uuid: uuid,
+                uuid: targetId,
                 characters: characters,
                 global_vars: globalVars,
                 mode: mode,
