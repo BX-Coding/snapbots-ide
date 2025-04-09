@@ -34,6 +34,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const targetIds = usePatchStore((state) => state.targetIds);
     const globalVariables = usePatchStore((state) => state.globalVariables);
     const setProjectChanged = usePatchStore((state) => state.setProjectChanged);
+    const setGlobalVariable = usePatchStore((state) => state.setGlobalVariable);
     const { handleAddSoundToEditingTarget } = useSoundHandlers();
     const { handleAddCostumesToEditingTarget } = useCostumeHandlers();
     const setCostumes = usePatchStore((state) => state.setCostumes);
@@ -105,7 +106,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 const snapbotMode = localStorage.getItem("snapbotMode") || "simulation";
                 setProcessingStatus(`Processing with ${snapbotMode} mode...`);
 
-                const TESTING_MODE = false;
+                const TESTING_MODE = true;
 
                 try {
                     let serverResponse = null;
@@ -122,6 +123,10 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                             costumes: ['elephant-a', 'elephant-b'],
                             sounds: ['C2 Bass'],
                             name: 'Snapbot Sprite',
+                            global_vars: {
+                                "test": 1,
+                                "test2": "test2",
+                            }
                         };
                     }
 
@@ -148,6 +153,15 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                         if (serverResponse.name) {
                             setProcessingStatus('Setting sprite name...');
                             patchVM.renameSprite(newTargetId, serverResponse.name);
+                        }
+                        
+                        // Add global variables from server response if available
+                        if (serverResponse.global_vars) {
+                            setProcessingStatus('Adding global variables...');
+                            Object.entries(serverResponse.global_vars).forEach(([name, value]) => {
+                                patchVM.updateGlobalVariable(name, value);
+                                usePatchStore.getState().setGlobalVariable(name, value as string | number | boolean);
+                            });
                         }
                         
                         // Add costumes if available
