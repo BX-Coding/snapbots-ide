@@ -15,7 +15,7 @@ import { sounds } from "../../assets/sounds";
 import { useCostumeHandlers } from "../../hooks/useCostumeUploadHandlers";
 import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
 import { useEditingTarget } from "../../hooks/useEditingTarget";
-import { addImageToSprite, setDisplayImage } from '../../components/ImageDisplay';
+import { addImageToSprite, setDisplayImage, StateImageDisplay } from '../ImageDisplay';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
@@ -148,6 +148,21 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
 
                     console.log(serverResponse);
 
+                    // Create a global variable for the current state
+                    const strippedTargetId = newTargetId.replace(/[^a-zA-Z0-9]/g, '');
+                    const stateVarName = `curr_state_${strippedTargetId}`;
+                    // Set default state to "start" or first state from diagram if available
+                    let startingState = "start";
+                    if (serverResponse && 
+                        serverResponse.status === 'success' && 
+                        serverResponse.diagram_images && 
+                        Object.keys(serverResponse.diagram_images).length > 0) {
+                        startingState = Object.keys(serverResponse.diagram_images)[0];
+                    }
+                    // Create the global variable
+                    patchVM.updateGlobalVariable(stateVarName, startingState);
+                    usePatchStore.getState().setGlobalVariable(stateVarName, startingState);
+
                     let generatedCode = '';
     
                     // Use the generated code or fallback to the default
@@ -187,6 +202,13 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                             
                             // Pass both targetId and imageKey to setDisplayImage
                             setDisplayImage(newTargetId, firstStateName);
+                            
+                            // We've added state-images that can now be displayed 
+                            // by the StateImageDisplay component automatically.
+                            // The StateImageDisplay component will look up the current
+                            // state in the global variables and display the corresponding image.
+                            
+                            console.log(`Added ${stateNames.length} state images for sprite ${newTargetId}`);
                         }
                     }
                     

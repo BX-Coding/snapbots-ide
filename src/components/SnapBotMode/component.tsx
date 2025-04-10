@@ -1,15 +1,65 @@
-import React, { useState } from "react";
-import { Grid, Box } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Grid, Box, Paper, Typography, Button, Stack } from "@mui/material";
 import { GamePane } from "../GamePane";
 import { HorizontalButtons } from "../PatchButton";
 import { StartButton, StopButton } from "../GamePane/ControlButton";
 import { SimplifiedSpritePane } from "../SpritePane/SimplifiedSpritePane";
-import { ImageDisplay } from "../ImageDisplay";
+import { StateImageDisplay } from "../ImageDisplay";
+import { StateDiagramDisplay } from "../StateDiagram";
+import usePatchStore from "../../store";
+import { getSpriteImages } from "../ImageDisplay/imageDisplayStore";
 
 export const SnapBotMode = () => {
-  // State to control which image to display
-  const [currentImageKey, setCurrentImageKey] = useState<string | undefined>(undefined);
-
+  // Get the current editing target
+  const editingTargetId = usePatchStore((state) => state.editingTargetId);
+  const globalVariables = usePatchStore((state) => state.globalVariables);
+  const patchVM = usePatchStore((state) => state.patchVM);
+  const setGlobalVariable = usePatchStore((state) => state.setGlobalVariable);
+  
+  // Track the current state name
+  const [currentState, setCurrentState] = useState<string | null>(null);
+  // Track available states
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  
+  // Update current state when global variables or editing target changes
+  useEffect(() => {
+    if (!editingTargetId) return;
+    
+    const strippedTargetId = editingTargetId.replace(/[^a-zA-Z0-9]/g, '');
+    const stateVarName = `curr_state_${strippedTargetId}`;
+    
+    const stateVar = globalVariables.find(v => v.name === stateVarName);
+    if (stateVar) {
+      setCurrentState(String(stateVar.value));
+    } else {
+      setCurrentState(null);
+    }
+    
+    // Get available states by checking what images exist for this sprite
+    try {
+      // Use the exported getSpriteImages function
+      const targetImages = getSpriteImages(editingTargetId) || {};
+      setAvailableStates(Object.keys(targetImages));
+    } catch (error) {
+      console.error("Error getting available states:", error);
+      setAvailableStates([]);
+    }
+  }, [editingTargetId, globalVariables]);
+  
+  // Function to change the sprite's state
+  const changeState = (newState: string) => {
+    if (!editingTargetId) return;
+    
+    const strippedTargetId = editingTargetId.replace(/[^a-zA-Z0-9]/g, '');
+    const stateVarName = `curr_state_${strippedTargetId}`;
+    
+    // Update the global variable
+    if (patchVM) {
+      patchVM.updateGlobalVariable(stateVarName, newState);
+      setGlobalVariable(stateVarName, newState);
+    }
+  };
+  
   return (
     <Grid container direction="column" sx={{ height: '100%', position: 'relative'  }}>
       {/* Centered buttons at the top */}
@@ -51,7 +101,7 @@ export const SnapBotMode = () => {
         <SimplifiedSpritePane />
       </Grid>
       
-      {/* Image Display component positioned under the sprite pane and to the left of the game pane */}
+      {/* State visualization area */}
       <Grid 
         item 
         sx={{ 
@@ -60,11 +110,59 @@ export const SnapBotMode = () => {
           left: 50,
           margin: 0,
           padding: 0,
-          zIndex: 1
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
         }}
       >
-        <ImageDisplay 
-          imageKey={currentImageKey} 
+        {/* State information panel */}
+        <Paper 
+          elevation={2}
+          sx={{ 
+            padding: 2, 
+            borderRadius: 2,
+            backgroundColor: 'background.paper',
+            width: 300
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Current State
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {currentState ? (
+              <>Sprite is in state: <strong>{currentState}</strong></>
+            ) : (
+              'No state information'
+            )}
+          </Typography>
+          
+          {/* State selection buttons */}
+          {availableStates.length > 0 && (
+            <>
+              <Typography variant="body2" sx={{ mt: 2, mb: 1 }}>
+                Change state:
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {availableStates.map((state) => (
+                  <Button
+                    key={state}
+                    variant={currentState === state ? "contained" : "outlined"}
+                    size="small"
+                    onClick={() => changeState(state)}
+                    sx={{ mb: 1 }}
+                  >
+                    {state}
+                  </Button>
+                ))}
+              </Stack>
+            </>
+          )}
+        </Paper>
+        
+        {/* State image display */}
+        <StateImageDisplay 
+          targetId={editingTargetId} 
           width={300} 
           height={250} 
         />

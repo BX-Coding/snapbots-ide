@@ -1,56 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import usePatchStore from "../../store";
-import { create } from "zustand";
+import { useImageDisplayStore, addImageToSprite as addImageToSpriteImpl, setCurrentImage as setCurrentImageImpl } from "./imageDisplayStore";
 
-// Define a store for managing images per sprite
-interface ImageDisplayState {
-  // Structure: { [targetId]: { [imageKey: string]: base64Image } }
-  spriteImages: { [targetId: string]: { [imageKey: string]: string } };
-  currentImage: string | null;
-  addImageToSprite: (targetId: string, imageKey: string, base64Image: string) => void;
-  setCurrentImage: (targetId: string, imageKey: string) => void;
-  getSpritesWithImages: () => string[];
-  getSpriteImages: (targetId: string) => { [imageKey: string]: string } | null;
-  getCurrentImage: () => string | null;
-}
-
-const useImageDisplayStore = create<ImageDisplayState>((set, get) => ({
-  spriteImages: {},
-  currentImage: null,
-  addImageToSprite: (targetId, imageKey, base64Image) =>
-    set((state) => ({
-      spriteImages: {
-        ...state.spriteImages,
-        [targetId]: {
-          ...(state.spriteImages[targetId] || {}),
-          [imageKey]: base64Image,
-        },
-      },
-    })),
-  setCurrentImage: (targetId, imageKey) =>
-    set((state) => {
-      const spriteImagesMap = state.spriteImages[targetId] || {};
-      return {
-        currentImage: spriteImagesMap[imageKey] || null,
-      };
-    }),
-  getSpritesWithImages: () => {
-    return Object.keys(get().spriteImages);
-  },
-  getSpriteImages: (targetId) => {
-    return get().spriteImages[targetId] || null;
-  },
-  getCurrentImage: () => {
-    return get().currentImage;
-  }
-}));
-
+// Define interface for component props
 interface ImageDisplayProps {
   imageKey?: string;
   targetId?: string;
   width?: string | number;
   height?: string | number;
+  watchState?: boolean; // New prop to enable state watching
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export const ImageDisplay: React.FC<ImageDisplayProps> = ({
@@ -58,6 +19,9 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   targetId,
   width = 300,
   height = 300,
+  watchState = false, // Default to false for backward compatibility
+  className,
+  style,
 }) => {
   const { currentImage, spriteImages, setCurrentImage } = useImageDisplayStore();
   const patchVM = usePatchStore((state) => state.patchVM);
@@ -121,9 +85,13 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
+        ...style
       }}
+      className={className}
     >
-      {currentImage ? (
+      {watchState ? (
+        <StateWatchingImageDisplay targetId={currentTargetId} width={width} height={height} />
+      ) : currentImage ? (
         <img
           src={currentImage}
           alt="Display"
@@ -151,21 +119,77 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   );
 };
 
+// New component that watches for state changes and updates displayed image
+const StateWatchingImageDisplay: React.FC<{
+  targetId: string | null;
+  width?: string | number;
+  height?: string | number;
+}> = ({ targetId, width, height }) => {
+  const spriteImages = useImageDisplayStore((state: any) => state.spriteImages);
+  const [currentStateImage, setCurrentStateImage] = useState<string | null>(null);
+  
+  // Get global variables to watch for state changes
+  const globalVariables = usePatchStore((state) => state.globalVariables);
+  
+  useEffect(() => {
+    if (!targetId) return;
+    
+    // Find the state variable for this target
+    const strippedTargetId = targetId.replace(/[^a-zA-Z0-9]/g, '');
+    const stateVarName = `curr_state_${strippedTargetId}`;
+    
+    // Find the current state value
+    const stateVar = globalVariables.find(v => v.name === stateVarName);
+    if (!stateVar) return;
+    
+    const currentState = String(stateVar.value);
+    
+    // Get the image for the current state
+    const targetImages = spriteImages[targetId] || {};
+    const stateImage = targetImages[currentState] || null;
+    
+    if (stateImage) {
+      setCurrentStateImage(stateImage);
+    }
+  }, [targetId, globalVariables, spriteImages]);
+  
+  if (currentStateImage) {
+    return (
+      <img
+        src={currentStateImage}
+        alt="State Display"
+        style={{
+          maxWidth: "100%",
+          maxHeight: "100%",
+          objectFit: "contain",
+        }}
+      />
+    );
+  }
+  
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "text.secondary",
+      }}
+    >
+      No state image available
+    </Box>
+  );
+};
+
 // Export utility functions to add images from other components
 export const addImageToSprite = (targetId: string, imageKey: string, base64Image: string) => {
-  try {
-    useImageDisplayStore.getState().addImageToSprite(targetId, imageKey, base64Image);
-  } catch (error) {
-    console.error('Error adding image to sprite:', error);
-  }
+  addImageToSpriteImpl(targetId, imageKey, base64Image);
 };
 
 export const setDisplayImage = (targetId: string, imageKey: string) => {
-  try {
-    useImageDisplayStore.getState().setCurrentImage(targetId, imageKey);
-  } catch (error) {
-    console.error('Error setting display image:', error);
-  }
+  setCurrentImageImpl(targetId, imageKey);
 };
 
 // Legacy support for old API

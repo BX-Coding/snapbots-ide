@@ -113,6 +113,9 @@ export async function sendImageForProcessing(
         
         console.log(`Using ${mode} mode for generation request`);
 
+        // strip all non-alphanumeric characters from targetId
+        targetId = targetId.replace(/[^a-zA-Z0-9]/g, '');
+
         // Use the mode-specific endpoint
         const endpoint = `/api/modal/${mode}.js`;
         console.log(`Using endpoint: ${endpoint}`);
