@@ -9,7 +9,7 @@ type CostumeImageProps = {
 
 export const CostumeImage = ({ costume }: CostumeImageProps) => {
     return <div style={{
-        backgroundImage: `url(${getCostumeUrl(costume.asset)})`,
+        backgroundImage: costume?.asset ? `url(${getCostumeUrl(costume.asset)})` : 'none',
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
