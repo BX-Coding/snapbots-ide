@@ -10,6 +10,7 @@ interface StateImageDisplayProps {
   height?: string | number;
   className?: string;
   style?: React.CSSProperties;
+  pollingInterval?: number; // New prop for customizing polling interval
 }
 
 /**
@@ -23,6 +24,7 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
   height = 300,
   className,
   style,
+  pollingInterval = 50,
 }) => {
   const patchVM = usePatchStore((state) => state.patchVM);
   const editingTarget = patchVM?.editingTarget || null;
@@ -36,30 +38,50 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
   // Track the current state value for this sprite
   const [currentState, setCurrentState] = useState<string | null>(null);
   
-  // Effect to detect state changes in global variables
+  // Effect to poll for state changes in global variables
   useEffect(() => {
-    if (!currentTargetId) return;
-
-    const globals = patchVM.getGlobalVariables();
-
-    console.log(`VM Globals: ${JSON.stringify(globals)}`);
-
-    console.log(`Current target ID: ${currentTargetId}`);
+    if (!currentTargetId || !patchVM) return;
     
-    // Find the state variable for this target (using the same naming convention as in SnapbotUploader)
-    const strippedTargetId = currentTargetId.replace(/[^a-zA-Z0-9]/g, '');
-    const stateVarName = `curr_state_${strippedTargetId}`;
+    const checkForStateUpdates = () => {
+      // Get fresh globals directly from VM
+      const globals = patchVM.getGlobalVariables();
+
+      console.log("globals", globals);
+      
+      // Find the state variable for this target (using the same naming convention as in SnapbotUploader)
+      const strippedTargetId = currentTargetId.replace(/[^a-zA-Z0-9]/g, '');
+      console.log("strippedTargetId", strippedTargetId);
+      const stateVarName = `curr_state_${strippedTargetId}`;
+      console.log("stateVarName", stateVarName);
+      
+      // Get the current state value from globals (handling both array and object formats)
+      let stateValue;
+      if (Array.isArray(globals)) {
+        // If globals is an array of {name, value} objects
+        const stateVar = globals.find(v => v.name === stateVarName);
+        stateValue = stateVar ? stateVar.value : undefined;
+      } else {
+        // Original approach - if globals is an object
+        stateValue = globals[stateVarName];
+      }
+
+      console.log("stateValue", stateValue);
+      
+      if (stateValue !== undefined && stateValue !== "") {
+        setCurrentState(String(stateValue));
+        console.log("state change detected, new state value:", String(stateValue));
+      }
+    };
     
-    // Get the current state value using getGlobalVariable
-    const stateValue = getGlobalVariable(stateVarName);
-    const newState = getGlobalVariable("duncan");
-    console.log(`State variable: ${stateVarName} = ${stateValue}`);
-    console.log(`New state: ${newState}`);
+    // Initial check
+    checkForStateUpdates();
     
-    if (stateValue !== "") {
-      setCurrentState(String(stateValue));
-    }
-  }, [currentTargetId, globalVariables, getGlobalVariable]);
+    // Set up polling interval
+    const intervalId = setInterval(checkForStateUpdates, pollingInterval);
+    
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, [currentTargetId, patchVM, getGlobalVariable, pollingInterval]);
   
   return (
     <ImageDisplay
@@ -67,6 +89,8 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
       imageKey={currentState || undefined}
       width={width}
       height={height}
+      className={className}
+      style={style}
     />
   );
 };

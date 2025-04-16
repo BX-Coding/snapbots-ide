@@ -106,7 +106,7 @@ const PatchCodeMirror = ({
         theme="dark"
         extensions={[
           python(),
-          lspConnectionState,
+          ...(lspConnectionState ? [lspConnectionState] : []),
           // autocompletion({ override: [completions(patchVM)] }),
           pythonLinter((_) => {}, getDiagnostics),
           lintGutter(),

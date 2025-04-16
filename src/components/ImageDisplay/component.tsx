@@ -42,6 +42,9 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   // Set the current image when the editing target or imageKey changes
   useEffect(() => {
     if (!isMounted) return;
+
+    console.log("currentTargetId", currentTargetId);
+    console.log("imageKey", imageKey);
     
     if (currentTargetId && spriteImages[currentTargetId]) {
       // If imageKey is provided, use it, otherwise use the first image for the sprite

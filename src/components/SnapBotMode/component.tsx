@@ -116,49 +116,7 @@ export const SnapBotMode = () => {
           gap: 2
         }}
       >
-        {/* State information panel */}
-        <Paper 
-          elevation={2}
-          sx={{ 
-            padding: 2, 
-            borderRadius: 2,
-            backgroundColor: 'background.paper',
-            width: 300
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Current State
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            {currentState ? (
-              <>Sprite is in state: <strong>{currentState}</strong></>
-            ) : (
-              'No state information'
-            )}
-          </Typography>
-          
-          {/* State selection buttons */}
-          {availableStates.length > 0 && (
-            <>
-              <Typography variant="body2" sx={{ mt: 2, mb: 1 }}>
-                Change state:
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {availableStates.map((state) => (
-                  <Button
-                    key={state}
-                    variant={currentState === state ? "contained" : "outlined"}
-                    size="small"
-                    onClick={() => changeState(state)}
-                    sx={{ mb: 1 }}
-                  >
-                    {state}
-                  </Button>
-                ))}
-              </Stack>
-            </>
-          )}
-        </Paper>
+        
         
         {/* State image display */}
         <StateImageDisplay 
