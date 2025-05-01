@@ -1,74 +1,189 @@
-.flex-col-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* Global styles */
+:root {
+  --primary-color: #1e88e5;
+  --secondary-color: #4caf50;
+  --text-color: #333;
+  --background-color: #ffffff;
+  --section-padding: 4rem 2rem;
 }
 
-.full-height {
-  height: 100vh;
+.homepage {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
-.text-4xl-bold {
-  font-size: 2.25rem;
-  font-weight: bold;
-}
-
-.text-center {
-  text-align: center;
-}
-
-h1 {
-  width: 100%;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.logo {
-  display: block;
-  position: relative;
-  width: 800px;
-  height: 0;
-  padding-bottom: calc(800px * 495 / 2048);
-}
-
-.logo img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  display: block;
-  object-fit: contain;
-}
-
+/* Header styles */
 .homepage-header {
   padding: 1rem 2rem;
+  background-color: var(--background-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .homepage-header nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0 auto;
 }
 
-.logo-small {
-  font-weight: bold;
-  font-size: 1.25rem;
+/* Hero section */
+.hero {
+  padding: var(--section-padding);
+  text-align: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
 }
 
-.nav-links a {
-  margin-left: 1rem;
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  color: #666;
+}
+
+/* Features section */
+.features {
+  padding: var(--section-padding);
+  background-color: var(--background-color);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.feature-card h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.feature-image {
+  margin: 1.5rem 0;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.feature-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+/* How it works section */
+.how-it-works {
+  padding: var(--section-padding);
+  background-color: #f8f9fa;
+  text-align: center; 
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto 0;
+}
+
+.step {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.step h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+/* Team section */
+.team {
+  padding: var(--section-padding);
+  text-align: center;
+  background-color: var(--background-color);
+}
+
+.team-members {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.advisor {
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* CTA section */
+.cta {
+  padding: var(--section-padding);
+  text-align: center;
+  background-color: #f8f9fa;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background-color: var(--primary-color);
+  color: white;
   text-decoration: none;
-  padding: 0.5rem 1rem;
   border-radius: 4px;
-  background-color: #0066cc;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cta-button:hover {
+  background-color: #1976d2;
+}
+
+/* Footer */
+footer {
+  padding: 2rem;
+  text-align: center;
+  background-color: #333;
   color: white;
 }
 
-.nav-links a:hover {
-  background-color: #0055aa;
+/* Responsive design */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .steps {
+    grid-template-columns: 1fr;
+  }
 } 

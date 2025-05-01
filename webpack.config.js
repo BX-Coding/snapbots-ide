@@ -69,6 +69,10 @@ export default {
         type: 'asset/resource'
       },
       {
+        test: /\.(jpg|jpeg)$/,
+        type: 'asset/resource'
+      },
+      {
         test: /\.ptch1$/,
         use: ['arraybuffer-loader'],
       },

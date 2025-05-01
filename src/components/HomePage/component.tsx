@@ -1,51 +1,88 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./style.css";
-// Use a placeholder image until you have the actual logo
-const logo = require("../../assets/eucalyptusLogo.png");
+// @ts-ignore
+import puppyDiagram from "../../assets/puppy_diagram.jpg";
+// @ts-ignore
+import uiScreenshot from "../../assets/snapbots_ui.png";
+// @ts-ignore
+import snapBotsRobot from "../../assets/snapbot_robot.png";
 
 const HomePage = () => {
   return (
-    <div>
-      <header className="homepage-header">
-        <nav>
-          <div className="logo-small">Project Eucalyptus</div>
-          <div className="nav-links">
-            <Link to="/app">Launch App</Link>
+    <div className="homepage">
+      <main>
+        <section className="hero">
+          <h1>SNAPBOTS: BRINGING DIAGRAMS TO LIFE</h1>
+          <p className="subtitle">A Tufts Senior Capstone Project</p>
+          <Link to="/app" className="cta-button">Launch App</Link>
+        </section>
+
+        <section className="features">
+          <div className="feature-grid">
+            <div className="feature-card">
+              <h3>Easy to Use</h3>
+              <div className="feature-image">
+                <img src={puppyDiagram} alt="State diagram drawing example" />
+              </div>
+              <p>Draw simple programs as state diagrams on paper and watch them come to life</p>
+            </div>
+            <div className="feature-card">
+              <h3>Simulate Virtually</h3>
+              <div className="feature-image">
+                <img src={uiScreenshot} alt="Scratch-based simulation interface" />
+              </div>
+              <p>Create and test robot behaviors using our Scratch-based, collaborative web simulation platform</p>
+            </div>
+            <div className="feature-card">
+              <h3>Deploy Physically</h3>
+              <div className="feature-image">
+                <img src={snapBotsRobot} alt="ESP32 robot with motors and sensors" />
+              </div>
+              <p>Run your programs on low-cost ESP32 robots with motors and sensors</p>
+            </div>
           </div>
-        </nav>
-      </header>
+        </section>
 
-      <div className="flex-col-center full-height">
-        <h1 className="text-4xl-bold text-center">
-          <span className="logo-container">
-            <span className="logo">
-              <picture>
-                <source srcSet={logo} type="image/png" />
-                <img src={logo} alt="Project Eucalyptus Logo" />
-              </picture>
-            </span>
-          </span>
-          Project Eucalyptus
-        </h1>
-      
-    
-            <section>
-                <p>This is a Tufts capstone project for the 2024-25 year.</p>
-            </section>
+        <section className="how-it-works">
+          <h2>How It Works</h2>
+          <div className="steps">
+            <div className="step">
+              <h3>1. Draw</h3>
+              <p>Students create state diagrams on paper</p>
+            </div>
+            <div className="step">
+              <h3>2. Scan</h3>
+              <p>Our computer vision system processes the diagrams</p>
+            </div>
+            <div className="step">
+              <h3>3. Generate</h3>
+              <p>AI converts diagrams into executable code</p>
+            </div>
+            <div className="step">
+              <h3>4. Run</h3>
+              <p>Test in our simulator or deploy to physical robots</p>
+            </div>
+          </div>
+        </section>
 
-            <section>
-                <h2>Team</h2>
-                <ul>
-                    <li>Dan Patterson</li>
-                    <li>Duncan Johnson</li>
-                    <li>Eddy Abban</li>
-                    <li>Jahnea Potts</li>
-                    <li>Nasir Wynruit</li>
-                    <li>Dr. Ethan Danahy</li>
-                </ul>
-            </section>
-        </div>
+        <section className="team">
+          <h2>Our Team</h2>
+          <div className="team-members">
+            <p>Eddy Abban • Duncan Johnson • Jahnea Potts • Danesia Patterson • Nasir Wynruit</p>
+            <p className="advisor">Faculty Advisor: Dr. Ethan Danahy</p>
+          </div>
+        </section>
+
+        <section className="cta">
+          <h2>Try It Out Yourself!</h2>
+          <Link to="/app" className="cta-button">Launch App</Link>
+        </section>
+      </main>
+
+      <footer>
+        <p>A Tufts University School of Engineering Capstone Project</p>
+      </footer>
     </div>
   );
 };
