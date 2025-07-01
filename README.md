@@ -1,3 +1,9 @@
+SnapBots
+
+Use node v18.20.9 
+
+
+
 # Welcome to the Patch Github Pages!
 
 <img src="https://bxcoding.org/wp-content/uploads/2023/07/94b695b8ef1123544cf202aa95af32f0.png" width="120">

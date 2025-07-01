@@ -51,7 +51,18 @@ export default {
           }
         }
       },
-      { test: /\.tsx?$/, use: { loader: 'ts-loader' }, exclude: /node_modules/ },
+      { 
+        test: /\.tsx?$/, 
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+            experimentalWatchApi: true,
+            compiler: 'typescript',
+          }
+        }, 
+        exclude: /node_modules/ 
+      },
       { enforce: "pre", test: /\.js$/, exclude: /node_modules/, loader: "source-map-loader" },
       {
         test: /\.css$/,
@@ -93,6 +104,6 @@ export default {
     })
   ],
   resolve: {
-    extensions: ['', '.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
   }
 }
