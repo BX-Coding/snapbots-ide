@@ -16,6 +16,7 @@ import { useCostumeHandlers } from "../../hooks/useCostumeUploadHandlers";
 import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
 import { useEditingTarget } from "../../hooks/useEditingTarget";
 import { addImageToSprite, setDisplayImage, StateImageDisplay } from '../ImageDisplay';
+import { CameraCapture } from './CameraCapture';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
@@ -40,6 +41,8 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const [error, setError] = useState<string | null>(null);
     const [activeStep, setActiveStep] = useState(0);
     const [processingStatus, setProcessingStatus] = useState('');
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    
     const { onAddSprite, setSnapbotSpriteCode } = useAddSprite();
     const patchVM = usePatchStore((state) => state.patchVM);
     const targetIds = usePatchStore((state) => state.targetIds);
@@ -50,6 +53,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const { handleAddCostumesToEditingTarget } = useCostumeHandlers();
     const setCostumes = usePatchStore((state) => state.setCostumes);
     const setSelectedCostumeIndex = usePatchStore((state) => state.setSelectedCostumeIndex);
+    
     // Steps for the stepper
     const steps = ['Upload Image', 'Process Image', 'Generate Code', 'Create Sprite'];
 
@@ -66,8 +70,16 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
 
             setSelectedFile(file);
             setImagePreview(URL.createObjectURL(file));
+            setCapturedImage(null); // Clear any captured image
             setError(null);
         }
+    };
+
+    const handleImageCaptured = (file: File, imageDataUrl: string) => {
+        setSelectedFile(file);
+        setImagePreview(imageDataUrl);
+        setCapturedImage(imageDataUrl);
+        setError(null);
     };
 
     const handleCreateSnapbotSprite = async () => {
@@ -323,18 +335,30 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
             </Typography>
             
             <Typography variant="body2" color="text.secondary" paragraph>
-                Upload an image to create a sprite with generated code.
+                Upload an image or take a photo to create a sprite with generated code.
             </Typography>
             
             {!uploading && (
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    style={{ marginBottom: '15px' }}
-                />
+                <Box sx={{ mb: 3 }}>
+                    {/* File upload section */}
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                            Upload from file:
+                        </Typography>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            style={{ marginBottom: '10px' }}
+                        />
+                    </Box>
+
+                    {/* Camera section */}
+                    <CameraCapture onImageCaptured={handleImageCaptured} />
+                </Box>
             )}
 
+            {/* Image preview */}
             {imagePreview && (
                 <Box sx={{ my: 2 }}>
                     <img 
@@ -346,6 +370,12 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                             objectFit: 'contain'
                         }} 
                     />
+                    {capturedImage && (
+                        <CameraCapture 
+                            onImageCaptured={handleImageCaptured}
+                            showStartButton={false}
+                        />
+                    )}
                 </Box>
             )}
 
