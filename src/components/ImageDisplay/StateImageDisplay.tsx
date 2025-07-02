@@ -45,14 +45,10 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
     const checkForStateUpdates = () => {
       // Get fresh globals directly from VM
       const globals = patchVM.getGlobalVariables();
-
-      console.log("globals", globals);
       
       // Find the state variable for this target (using the same naming convention as in SnapbotUploader)
       const strippedTargetId = currentTargetId.replace(/[^a-zA-Z0-9]/g, '');
-      console.log("strippedTargetId", strippedTargetId);
       const stateVarName = `curr_state_${strippedTargetId}`;
-      console.log("stateVarName", stateVarName);
       
       // Get the current state value from globals (handling both array and object formats)
       let stateValue;
@@ -64,8 +60,6 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
         // Original approach - if globals is an object
         stateValue = globals[stateVarName];
       }
-
-      console.log("stateValue", stateValue);
       
       if (stateValue !== undefined && stateValue !== "") {
         setCurrentState(String(stateValue));
