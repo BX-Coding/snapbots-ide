@@ -95,7 +95,7 @@ export const SnapBotMode = () => {
           transform: 'scale(1.5)',
           transformOrigin: 'top left',
           height: '100%',
-          width: '100%'
+          width: '30%'
         }}
       >
         <SimplifiedSpritePane />
