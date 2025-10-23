@@ -2,7 +2,7 @@ import { SpriteJson } from "../components/EditorPane/types";
 
 export const sprites: SpriteJson[] = [
     {
-        "name": "Constructing",
+        "name": "Building...",
         "tags": [
         ],
         "isStage": false,
