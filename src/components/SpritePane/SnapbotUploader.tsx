@@ -103,6 +103,9 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
         try {
             setProcessingStatus('Creating new sprite...');
             const newTargetId = await onAddSprite();
+
+            // close the modal
+            onClose();
             
             if (newTargetId) {
                 // Default code in case generation fails
@@ -157,8 +160,6 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                             }
                         };
                     }
-
-                    console.log(serverResponse);
 
                     // Create a global variable for the current state
                     const strippedTargetId = newTargetId.replace(/[^a-zA-Z0-9]/g, '');
@@ -304,7 +305,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                     }
                     
                     setProjectChanged(true);
-                    onClose();
+                    // onClose();
                 } catch (error) {
                     console.error('Error with Modal server:', error);
                     // Fallback to default code if Modal server fails
