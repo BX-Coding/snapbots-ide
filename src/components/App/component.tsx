@@ -190,8 +190,8 @@ const PatchApp = () => {
                         );
                         const functionNameWithParams = `${value.name}(${parameterNames})`;
                         return (
-                          <>
-                            <Typography key={value.name} sx={{ px: 4, py: 2 }}>
+                          <React.Fragment key={value.name}>
+                            <Typography sx={{ px: 4, py: 2 }}>
                               <Typography variant="h6" sx={{ color: "white" }}>
                                 {functionNameWithParams}
                               </Typography>
@@ -229,7 +229,7 @@ const PatchApp = () => {
                               </Button>
                             </Typography>
                             <hr></hr>
-                          </>
+                          </React.Fragment>
                         );
                       })}
                     </Popover>

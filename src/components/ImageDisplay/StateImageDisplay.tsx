@@ -63,7 +63,6 @@ export const StateImageDisplay: React.FC<StateImageDisplayProps> = ({
       
       if (stateValue !== undefined && stateValue !== "") {
         setCurrentState(String(stateValue));
-        console.log("state change detected, new state value:", String(stateValue));
       }
     };
     

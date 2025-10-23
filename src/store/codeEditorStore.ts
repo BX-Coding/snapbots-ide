@@ -84,7 +84,7 @@ export const createCodeEditorSlice: StateCreator<
   sendLspState: () => {
     const transport = get().transportRef;
     if (!transport) {
-      console.error("WebSocket is not initialized.");
+      // console.error("WebSocket is not initialized.");
       return;
     }
     

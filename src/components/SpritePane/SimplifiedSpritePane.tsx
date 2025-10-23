@@ -28,7 +28,7 @@ export function SimplifiedSpritePane() {
                 <AddSpriteButton />
                 {editingTarget && <DeleteSpriteButton /> }
             </HorizontalButtons>
-            <Grid container direction="row" spacing={"8px"} xs={12} sx={{
+            <Grid container direction="row" spacing={"8px"} sx={{
                 backgroundColor: 'panel.main',
                 margin: '-8px',
                 marginTop: '0px',
@@ -41,12 +41,12 @@ export function SimplifiedSpritePane() {
                 justifyContent: 'left',
                 alignContent: 'start'
             }}>
-                {targetIds.map((targetId) => {
-                    const target = patchVM.runtime.getTargetById(targetId);
-                    return (
-                        target ? ((target.isSprite() && !target.sprite.isStage) && <Grid item sx={{maxWidth: '136px', maxHeight: '136px'}}><SpriteCard key={target.id} target={target} /></Grid>) : <></>
-                    );
-                })}
+            {targetIds.map((targetId) => {
+                const target = patchVM.runtime.getTargetById(targetId);
+                return (
+                    target ? ((target.isSprite() && !target.sprite.isStage) && <Grid item key={target.id} sx={{maxWidth: '136px', maxHeight: '136px'}}><SpriteCard target={target} /></Grid>) : <></>
+                );
+            })}
             </Grid>
         </Box>
     );

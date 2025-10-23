@@ -41,7 +41,7 @@ export default function SpritePane(){
                 <AddSpriteButton />
                 {editingTarget && <DeleteSpriteButton /> }
             </HorizontalButtons>
-            <Grid container direction="row" spacing={"8px"} xs={12} sx={{
+            <Grid container direction="row" spacing={"8px"} sx={{
                 backgroundColor: 'panel.main',
                 margin: '-8px',
                 marginTop: '0px',

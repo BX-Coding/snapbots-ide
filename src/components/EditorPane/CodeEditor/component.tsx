@@ -15,35 +15,35 @@ import { WebSocketTransport } from "@open-rpc/client-js";
 
 
 export const CodeEditor = () => {
-  const [lspConnectionState, setLspConnectionState] = useState<any>(null);
+  // const [lspConnectionState, setLspConnectionState] = useState<any>(null);
 
   const setCurrentThreadId = usePatchStore((state) => state.setCodeThreadId);
-  const setTransport = usePatchStore((state)=>state.setTransportRef);
-  useEffect(() => {
-    // const serverUri = `ws://localhost:8080` as
-    //   | `ws://${string}`
-    //   | `wss://${string}`;
-    const serverUri = `${process.env.LSP_SERVER_URL}` as
-      | `ws://${string}`
-      | `wss://${string}`;
+  // const setTransport = usePatchStore((state)=>state.setTransportRef);
+  // useEffect(() => {
+  //   // const serverUri = `ws://localhost:8080` as
+  //   //   | `ws://${string}`
+  //   //   | `wss://${string}`;
+  //   const serverUri = `${process.env.LSP_SERVER_URL}` as
+  //     | `ws://${string}`
+  //     | `wss://${string}`;
 
-    const transport = new WebSocketTransport(serverUri);
-    setTransport(transport)
+  //   const transport = new WebSocketTransport(serverUri);
+  //   setTransport(transport)
 
-    const getCopilotClient = once(() =>
-      languageServerWithTransport({
-        rootUri: `file:///`,
-        documentUri: "file:///index.js",
-        languageId: "python",
-        workspaceFolders: null,
-        transport: transport,
-      })
-    );
+  //   const getCopilotClient = once(() =>
+  //     languageServerWithTransport({
+  //       rootUri: `file:///`,
+  //       documentUri: "file:///index.js",
+  //       languageId: "python",
+  //       workspaceFolders: null,
+  //       transport: transport,
+  //     })
+  //   );
 
-    const ls = getCopilotClient();
+  //   const ls = getCopilotClient();
 
-    setLspConnectionState(ls);
-  }, []);
+  //   setLspConnectionState(ls);
+  // }, []);
 
   const threads = useThreads();
   const currentThreadId = useGetCodeThreadId();
@@ -77,6 +77,7 @@ export const CodeEditor = () => {
       >
         {threads.map((thread, i) => (
           <Button
+            key={thread.thread.id}
             variant={
               thread.thread.id === currentThreadId ? "contained" : "outlined"
             }
@@ -91,6 +92,7 @@ export const CodeEditor = () => {
       {threads.map((threadState, i) => {
         return (
           <Box
+            key={threadState.thread.id}
             flexDirection={"column"}
             display={
               threadState.thread.id === currentThreadId ? "flex" : "none"
@@ -102,7 +104,7 @@ export const CodeEditor = () => {
             />
             <PatchCodeMirror
               thread={threadState.thread}
-              lspConnectionState={lspConnectionState}
+              lspConnectionState={null}
             />
           </Box>
         );
