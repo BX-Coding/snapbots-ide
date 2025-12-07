@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Box, Button, Typography, CircularProgress, Stepper, Step, StepLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAddSprite } from "./onAddSpriteHandler";
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { snapbotStorage } from '../../lib/snapbotFirebase';
 import { 
     sendImageForProcessing, 
     parseCodeFromResponse, 
@@ -17,6 +15,7 @@ import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
 import { useEditingTarget } from "../../hooks/useEditingTarget";
 import { addImageToSprite, setDisplayImage, StateImageDisplay } from '../ImageDisplay';
 import { CameraCapture } from './CameraCapture';
+import { ImageCropper } from './ImageCropper';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
@@ -42,6 +41,10 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const [activeStep, setActiveStep] = useState(0);
     const [processingStatus, setProcessingStatus] = useState('');
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    // Cropping state
+    const [showCropper, setShowCropper] = useState(false);
+    const [originalImage, setOriginalImage] = useState<string | null>(null); // Uncropped image for cropper
+    const [isCropped, setIsCropped] = useState(false); // Track if image has been cropped
     
     const { onAddSprite, setSnapbotSpriteCode } = useAddSprite();
     const patchVM = usePatchStore((state) => state.patchVM);
@@ -68,18 +71,43 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 return;
             }
 
-            setSelectedFile(file);
-            setImagePreview(URL.createObjectURL(file));
-            setCapturedImage(null); // Clear any captured image
+            // Store original and show cropper
+            const imageUrl = URL.createObjectURL(file);
+            setOriginalImage(imageUrl);
+            setShowCropper(true);
+            setCapturedImage(null);
+            setIsCropped(false);
             setError(null);
         }
     };
 
     const handleImageCaptured = (file: File, imageDataUrl: string) => {
-        setSelectedFile(file);
-        setImagePreview(imageDataUrl);
+        // Store original and show cropper
+        setOriginalImage(imageDataUrl);
+        setShowCropper(true);
         setCapturedImage(imageDataUrl);
+        setIsCropped(false);
         setError(null);
+    };
+
+    const handleCropComplete = (croppedFile: File, croppedDataUrl: string) => {
+        setSelectedFile(croppedFile);
+        setImagePreview(croppedDataUrl);
+        setShowCropper(false);
+        setIsCropped(true);
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setOriginalImage(null);
+        setCapturedImage(null);
+    };
+
+    const handleRecrop = () => {
+        // Re-open the cropper with the original image
+        if (originalImage) {
+            setShowCropper(true);
+        }
     };
 
     const handleCreateSnapbotSprite = async () => {
@@ -93,13 +121,6 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
         setActiveStep(1);
         setProcessingStatus('Uploading image to storage...');
 
-        const storageRef = ref(snapbotStorage, `uploads/${Date.now()}_${selectedFile.name}`);
-        
-        await uploadBytes(storageRef, selectedFile);
-        const downloadURL = await getDownloadURL(storageRef);
-        
-        console.log('File uploaded successfully:', downloadURL);
-
         try {
             setProcessingStatus('Creating new sprite...');
             const newTargetId = await onAddSprite();
@@ -109,7 +130,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
             
             if (newTargetId) {
                 // Default code in case generation fails
-                const defaultCode = `turnLeft(10) \nsay("${downloadURL}")`;
+                const defaultCode = `turnLeft(10) \nsay("${selectedFile.name}")`;
 
                 // Get all sprite names from the current project
                 const spriteNames = targetIds
@@ -146,7 +167,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                     } else {
                         serverResponse = {
                             status: 'success',
-                            code: 'turnLeft(10) \nsay("${downloadURL}")',
+                            code: 'turnLeft(10) \nsay("${selectedFile.name}")',
                             costumes: ['elephant-a', 'elephant-b'],
                             sounds: ['C2 Bass'],
                             name: 'Snapbot Sprite',
@@ -339,7 +360,16 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 Upload an image or take a photo to create a sprite with generated code.
             </Typography>
             
-            {!uploading && (
+            {/* Image Cropper */}
+            {showCropper && originalImage && (
+                <ImageCropper
+                    imageSrc={originalImage}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
+            )}
+
+            {!uploading && !showCropper && !imagePreview && (
                 <Box sx={{ mb: 3 }}>
                     {/* File upload section */}
                     <Box sx={{ mb: 2 }}>
@@ -359,24 +389,40 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 </Box>
             )}
 
-            {/* Image preview */}
-            {imagePreview && (
+            {/* Image preview (after cropping) */}
+            {imagePreview && !showCropper && (
                 <Box sx={{ my: 2 }}>
+                    <Typography variant="subtitle2" color="success.main" sx={{ mb: 1 }}>
+                        {isCropped ? '✓ Image cropped' : 'Preview:'}
+                    </Typography>
                     <img 
                         src={imagePreview} 
                         alt="Preview" 
                         style={{ 
                             maxWidth: '100%', 
                             maxHeight: '300px',
-                            objectFit: 'contain'
+                            objectFit: 'contain',
+                            border: '2px solid #4caf50',
+                            borderRadius: '8px'
                         }} 
                     />
-                    {capturedImage && (
-                        <CameraCapture 
-                            onImageCaptured={handleImageCaptured}
-                            showStartButton={false}
-                        />
-                    )}
+                    <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                        {originalImage && (
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={handleRecrop}
+                            >
+                                Adjust Crop
+                            </Button>
+                        )}
+                        {capturedImage && (
+                            <CameraCapture 
+                                onImageCaptured={handleImageCaptured}
+                                showStartButton={false}
+                            />
+                        )}
+                    </Box>
                 </Box>
             )}
 
@@ -396,7 +442,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                 </Box>
             )}
 
-            {!uploading && (
+            {!uploading && !showCropper && (
                 <Button
                     variant="contained"
                     color="primary"
