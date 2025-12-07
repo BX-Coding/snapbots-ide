@@ -8,11 +8,11 @@
           "variables": {},
           "costumes": [
             {
-              "name": "Arctic",
-              "assetId": "67e0db3305b3c8bac3a363b1c428892e",
+              "name": "Spotlight",
+              "assetId": "d26bf4c3980163d9106625cc2ea6c50d",
               "bitmapResolution": 2,
               "dataFormat": "png",
-              "md5ext": "67e0db3305b3c8bac3a363b1c428892e.png",
+              "md5ext": "d26bf4c3980163d9106625cc2ea6c50d.png",
               "rotationCenterX": 480,
               "rotationCenterY": 360
             }
