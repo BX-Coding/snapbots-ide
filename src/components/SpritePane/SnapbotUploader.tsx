@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Box, Button, Typography, CircularProgress, Stepper, Step, StepLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAddSprite } from "./onAddSpriteHandler";
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { snapbotStorage } from '../../lib/snapbotFirebase';
 import { 
     sendImageForProcessing, 
     parseCodeFromResponse, 
@@ -123,13 +121,6 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
         setActiveStep(1);
         setProcessingStatus('Uploading image to storage...');
 
-        const storageRef = ref(snapbotStorage, `uploads/${Date.now()}_${selectedFile.name}`);
-        
-        await uploadBytes(storageRef, selectedFile);
-        const downloadURL = await getDownloadURL(storageRef);
-        
-        console.log('File uploaded successfully:', downloadURL);
-
         try {
             setProcessingStatus('Creating new sprite...');
             const newTargetId = await onAddSprite();
@@ -139,7 +130,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
             
             if (newTargetId) {
                 // Default code in case generation fails
-                const defaultCode = `turnLeft(10) \nsay("${downloadURL}")`;
+                const defaultCode = `turnLeft(10) \nsay("${selectedFile.name}")`;
 
                 // Get all sprite names from the current project
                 const spriteNames = targetIds
@@ -176,7 +167,7 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                     } else {
                         serverResponse = {
                             status: 'success',
-                            code: 'turnLeft(10) \nsay("${downloadURL}")',
+                            code: 'turnLeft(10) \nsay("${selectedFile.name}")',
                             costumes: ['elephant-a', 'elephant-b'],
                             sounds: ['C2 Bass'],
                             name: 'Snapbot Sprite',
