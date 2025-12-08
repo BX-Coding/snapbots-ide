@@ -323,6 +323,10 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                                 }
                             }
                         }
+
+                        //  move the sprite to a random position in the middle of the stage on play
+                        patchVM.editingTarget.x = Math.random() * 200 - 100;
+                        patchVM.editingTarget.y = Math.random() * 200 - 100;
                     }
                     
                     setProjectChanged(true);
