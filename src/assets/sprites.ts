@@ -13,8 +13,8 @@ export const sprites: SpriteJson[] = [
             "bitmapResolution": 1,
             "md5ext": "0c4067fa635f2f3e6d578bddd42730f3.svg",
             "dataFormat": "svg",
-            "rotationCenterX": 40,
-            "rotationCenterY": 40
+            "rotationCenterX": 29,
+            "rotationCenterY": 34
         },],
         "sounds": [],
         "blocks": {}
