@@ -1,0 +1,163 @@
+{
+    "vmstate": {
+      "targets": [
+        {
+          "name": "Stage",
+          "tags": [],
+          "isStage": true,
+          "variables": {},
+          "costumes": [
+            {
+                "name": "Soccer 2",
+                "assetId": "b0dc1268cb595aaeef405bce40d1639c",
+                "bitmapResolution": 2,
+                "dataFormat": "png",
+                "md5ext": "b0dc1268cb595aaeef405bce40d1639c.png",
+                "rotationCenterX": 480,
+                "rotationCenterY": 360
+            }
+          ],
+          "sounds": [],
+          "blocks": {}
+        },
+        {
+          "isStage": false,
+          "name": "LeftGoal",
+          "variables": {},
+          "lists": {},
+          "broadcasts": {},
+          "blocks": {},
+          "comments": {},
+          "currentCostume": 0,
+          "costumes": [
+            {
+                "assetId": "a3b357ea21773bcb3545a227ee877e9a",
+                "name": "button3-b",
+                "bitmapResolution": 1,
+                "md5ext": "a3b357ea21773bcb3545a227ee877e9a.svg",
+                "dataFormat": "svg",
+                "rotationCenterX": 72,
+                "rotationCenterY": 72
+            }
+          ],
+          "sounds": [],
+          "volume": 100,
+          "layerOrder": 1,
+          "visible": true,
+          "x": -240,
+          "y": -30,
+          "size": 40,
+          "direction": 0,
+          "draggable": false,
+          "rotationStyle": "all around",
+          "threads": [
+            {
+              "script": "setGraphicEffectTo(\"color\", 60)",
+              "triggerEventId": "event_whenflagclicked",
+              "triggerEventOption": ""
+            }
+          ]
+        },
+        {
+            "isStage": false,
+            "name": "RightGoal",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+              {
+                  "assetId": "a3b357ea21773bcb3545a227ee877e9a",
+                  "name": "button3-b",
+                  "bitmapResolution": 1,
+                  "md5ext": "a3b357ea21773bcb3545a227ee877e9a.svg",
+                  "dataFormat": "svg",
+                  "rotationCenterX": 72,
+                  "rotationCenterY": 72
+              }
+            ],
+            "sounds": [],
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 240,
+            "y": -30,
+            "size": 40,
+            "direction": 0,
+            "draggable": false,
+            "rotationStyle": "all around",
+            "threads": [
+              {
+                "script": "setGraphicEffectTo(\"color\", 60)",
+                "triggerEventId": "event_whenflagclicked",
+                "triggerEventOption": ""
+              }
+            ]
+          },
+          {
+            "isStage": false,
+            "name": "SoccerBall",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "assetId": "5d973d7a3a8be3f3bd6e1cd0f73c32b5",
+                    "name": "soccer ball",
+                    "bitmapResolution": 1,
+                    "md5ext": "5d973d7a3a8be3f3bd6e1cd0f73c32b5.svg",
+                    "dataFormat": "svg",
+                    "rotationCenterX": 23,
+                    "rotationCenterY": 22
+                }
+            ],
+            "sounds": [
+                {
+                    "name": "Clapping",
+                    "tags": [
+                        "human"
+                    ],
+                    "assetId": "684ffae7bc3a65e35e9f0aaf7a579dd5",
+                    "dataFormat": "",
+                    "md5ext": "684ffae7bc3a65e35e9f0aaf7a579dd5.wav",
+                    "sampleCount": 168320,
+                    "rate": 44100
+                }
+            ],
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 0,
+            "y": -85,
+            "size": 50,
+            "direction": 0,
+            "draggable": false,
+            "rotationStyle": "all around",
+            "threads": [
+              {
+                "script": "setGraphicEffectTo(\"brightness\", 20)\nsetGraphicEffectTo(\"color\", 60)\nimport time\nvelFriction = 0.3\nbounceEnergy = 1.2\nballXAcc = 0\n\nballYAcc = 0\nballXVel = 0\nballYVel = 0\ntarget_fps = 60\nframe_duration = 1.0 / target_fps\nlast_time = time.time()\nwhile (True):\n  start_of_frame = time.time()\n  current_time = time.time()\n  dt = current_time - last_time\n  last_time = current_time\n  ballXVel += ballXAcc * dt\n  ballYVel += ballYAcc * dt\n  changeX(ballXVel * dt)\n  changeY(ballYVel * dt)\n  ballXVel *= (velFriction ** dt)\n  ballYVel *= (velFriction ** dt)\n  ballXAcc = 0\n  ballYAcc = 0\n  # handle boundaries\n  if getX() < -230 or getX() > 230:\n    ballXVel *= -bounceEnergy\n    ballXAcc *= -bounceEnergy \n  if getY() < -170 or getY() > 170:\n    ballYVel *= -bounceEnergy\n    ballYAcc *= -bounceEnergy\n  if isTouching(\"LeftGoal\") or isTouching(\"RightGoal\"):\n    playSoundUntilDone(\"Clapping\")\n    ballXVel = 0\n    ballYVel = 0\n    ballXAcc = 0\n    ballYAcc = 0\n    goToXY(0, -85)\n  # FPS capping\n  end_of_frame = time.time()\n  elapsed = end_of_frame - start_of_frame\n  sleep_time = frame_duration - elapsed\n  if sleep_time > 0:\n      time.sleep(sleep_time)",
+                "triggerEventId": "event_whenflagclicked",
+                "triggerEventOption": ""
+              }
+            ]
+          }
+      ],
+      "extensions": [],
+      "meta": {
+        "semver": "3.0.0",
+        "vm": "1.1.8",
+        "agent": ""
+      }
+    },
+    "globalVariables": [
+    { "name": "ballXAcc", "value": 0 },
+    { "name": "ballYAcc", "value": 0 },
+    { "name": "ballXVel", "value": 0 },
+    { "name": "ballYVel", "value": 0 }
+  ]
+  }

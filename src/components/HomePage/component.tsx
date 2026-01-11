@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./style.css";
 // @ts-ignore
 import puppyDiagram from "../../assets/puppy_diagram.jpg";
@@ -9,13 +9,25 @@ import uiScreenshot from "../../assets/snapbots_ui.png";
 import snapBotsRobot from "../../assets/snapbot_robot.png";
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
+  const handleLaunchSoccer = () => {
+    localStorage.setItem('snapbotMode', 'soccer');
+    // useLocalStorage expects JSON-encoded values
+    localStorage.setItem('patchProjectId', JSON.stringify('soccer'));
+    navigate('/app');
+  };
+
   return (
     <div className="homepage">
       <main>
         <section className="hero">
           <h1>SNAPBOTS: BRINGING DIAGRAMS TO LIFE</h1>
           <p className="subtitle">A Tufts Senior Capstone Project</p>
-          <Link to="/app" className="cta-button">Launch App</Link>
+          <div className="hero-buttons">
+            <Link to="/app" className="cta-button">Launch App</Link>
+            <button onClick={handleLaunchSoccer} className="cta-button soccer-button">Launch Soccer Game</button>
+          </div>
         </section>
 
         <section className="features">
@@ -76,7 +88,10 @@ const HomePage = () => {
 
         <section className="cta">
           <h2>Try It Out Yourself!</h2>
-          <Link to="/app" className="cta-button">Launch App</Link>
+          <div className="hero-buttons">
+            <Link to="/app" className="cta-button">Launch App</Link>
+            <button onClick={handleLaunchSoccer} className="cta-button soccer-button">Launch Soccer Game</button>
+          </div>
         </section>
       </main>
 

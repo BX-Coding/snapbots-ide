@@ -30,6 +30,12 @@ export default {
         pathRewrite: { '^/api/modal/hybrid.js': '/generation' },
         changeOrigin: true,
         secure: false,
+      },
+      '/api/modal/soccer': {
+        target: 'https://eucalyptus--snapbot-soccer.modal.run/',
+        pathRewrite: { '^/api/modal/soccer.js': '/generation' },
+        changeOrigin: true,
+        secure: false,
       }
     }
   },

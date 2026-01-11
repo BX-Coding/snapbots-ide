@@ -5,6 +5,7 @@ import { usePatchSerialization } from './usePatchSerialization';
 import { Asset, Project, VmState } from '../components/EditorPane/types';
 import usePatchStore from '../store';
 import defaultPatchProject from '../assets/default-project.json';
+import soccerPatchProject from '../assets/soccer-project.json';
 import { useLocalStorage } from 'usehooks-ts';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
@@ -38,6 +39,17 @@ export const useProjectActions = (defaultProjectId?: string) => {
     
     const loadCloudProject = async () => {
         setProjectLoading(true);
+        
+        // Check if loading the soccer project
+        if (defaultProjectId === 'soccer') {
+            console.warn("Loading soccer project.");
+            setNewProject(true);
+            const vmStateJson = soccerPatchProject as unknown;
+            await loadSerializedProject(vmStateJson as VmState, true);
+            setProjectLoading(false);
+            return;
+        }
+        
         const projectReference = getProjectReference();
         if (!projectReference) {
             console.warn("Project reference was null. Aborting.");
