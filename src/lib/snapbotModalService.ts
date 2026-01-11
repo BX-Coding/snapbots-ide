@@ -88,6 +88,8 @@ export function getEndpointUrl(): string {
     
     if (mode === "hybrid") {
         return process.env.SNAPBOT_HYBRID_MODAL_ENDPOINT || "https://eucalyptus--snapbot-hybrid.modal.run/";
+    } else if (mode === "soccer") {
+        return process.env.SNAPBOT_SOCCER_MODAL_ENDPOINT || "https://eucalyptus--snapbot-soccer.modal.run/";
     } else {
         // Default to simulation endpoint
         return process.env.SNAPBOT_SIMULATION_MODAL_ENDPOINT || "https://eucalyptus--snapbot-simulation.modal.run/";

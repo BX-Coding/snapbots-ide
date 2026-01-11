@@ -60,6 +60,66 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     // Steps for the stepper
     const steps = ['Upload Image', 'Process Image', 'Generate Code', 'Create Sprite'];
 
+    // Function to add a kick thread to the SoccerBall sprite in soccer mode
+    const addKickThreadToSoccerBall = async (newSpriteName: string) => {
+        try {
+            // Find the SoccerBall target
+            const allTargets = patchVM.getAllRenderedTargets();
+            const soccerBallTarget = allTargets.find((target: any) => target.sprite?.name === 'SoccerBall');
+            
+            if (!soccerBallTarget) {
+                console.warn('SoccerBall sprite not found, skipping kick thread creation');
+                return;
+            }
+
+            console.log(`Adding kick thread for ${newSpriteName} to SoccerBall`);
+
+            // Generate the kick script with the new sprite's name
+            const kickScript = `import math
+import time
+
+spriteName = "${newSpriteName}"
+kickDistanceThreshold = 60
+kickForce = 10000
+
+kickerX = getAttributeOf(spriteName, 'x position')
+kickerY = getAttributeOf(spriteName, 'y position')
+
+ballX = getX()
+ballY = getY()
+
+distance = ((kickerX - ballX) ** 2 + (kickerY - ballY) ** 2) ** 0.5
+
+lastKickedTime = time.time()
+
+if (distance < kickDistanceThreshold):
+  # the ball should be kicked
+  angleToKicker = math.atan2(kickerY - ballY, kickerX - ballX)
+
+  # stop all prior velocity
+  ballXVel = 0
+  ballYVel = 0
+  
+  ballXAcc = math.cos(angleToKicker) * kickForce * -1
+  ballYAcc = math.sin(angleToKicker) * kickForce * -1`;
+
+            // Add a new thread to the SoccerBall sprite
+            const broadcastMessage = `${newSpriteName}_kick`;
+            const threadId = await soccerBallTarget.addThread("", "event_whenbroadcastreceived");
+            
+            // Set the broadcast message option
+            const thread = soccerBallTarget.getThread(threadId);
+            if (thread) {
+                thread.updateThreadTriggerEventOption(broadcastMessage);
+                thread.displayName = `${newSpriteName} Kick`;
+                thread.updateThreadScript(kickScript);
+                console.log(`Successfully added kick thread for ${newSpriteName} with broadcast: ${broadcastMessage}`);
+            }
+        } catch (error) {
+            console.error('Error adding kick thread to SoccerBall:', error);
+        }
+    };
+
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         
@@ -257,6 +317,12 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
                         if (serverResponse.name) {
                             setProcessingStatus('Setting sprite name...');
                             patchVM.renameSprite(newTargetId, serverResponse.name);
+                            
+                            // In soccer mode, add a kick thread to the SoccerBall sprite
+                            if (snapbotMode === 'soccer') {
+                                setProcessingStatus('Adding kick thread to SoccerBall...');
+                                await addKickThreadToSoccerBall(serverResponse.name);
+                            }
                         }
                         
                         // Add global variables from server response if available

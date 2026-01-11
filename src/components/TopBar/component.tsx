@@ -203,6 +203,7 @@ export function TopBar({ mode, setMode, appMode, setAppMode }: TopBarProps) {
               >
                 <MenuItem value="simulation">Simulation-Only</MenuItem>
                 <MenuItem value="hybrid">Simulation-Physical Hybrid</MenuItem>
+                <MenuItem value="soccer">Soccer Game</MenuItem>
               </Select>
             </FormControl>
           </Box>
