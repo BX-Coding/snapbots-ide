@@ -46,6 +46,13 @@
   color: #666;
 }
 
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
 /* Features section */
 .features {
   padding: var(--section-padding);
@@ -155,10 +162,24 @@
   border-radius: 4px;
   font-weight: 600;
   transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  box-sizing: border-box;
 }
 
 .cta-button:hover {
   background-color: #1976d2;
+}
+
+.soccer-button {
+  background-color: #4caf50;
+}
+
+.soccer-button:hover {
+  background-color: #388e3c;
 }
 
 /* Footer */
