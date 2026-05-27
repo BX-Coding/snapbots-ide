@@ -10,6 +10,16 @@ interface CameraCaptureProps {
     showStartButton?: boolean;
     buttonSize?: number;
     facingMode?: 'user' | 'environment';
+    /**
+     * Constrain the camera preview to a fixed shape with a max height. Useful on
+     * mobile: a portrait camera stream otherwise renders huge because the video's
+     * intrinsic height drives the layout. The underlying captured frame is still
+     * full-resolution — this only controls the on-screen viewfinder.
+     */
+    compactPreview?: {
+        aspectRatio: string; // CSS aspect-ratio, e.g. '4 / 3'
+        maxHeight: string;   // CSS max-height, e.g. '35vh'
+    };
 }
 
 export function CameraCapture({
@@ -18,6 +28,7 @@ export function CameraCapture({
     showStartButton = true,
     buttonSize = 80,
     facingMode = 'user',
+    compactPreview,
 }: CameraCaptureProps) {
     // Camera-related state
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -151,7 +162,23 @@ export function CameraCapture({
                 <Typography variant="h6" gutterBottom>
                     Camera
                 </Typography>
-                <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <Box
+                    sx={compactPreview ? {
+                        position: 'relative',
+                        display: 'block',
+                        width: '100%',
+                        maxWidth: 500,
+                        mx: 'auto',
+                        aspectRatio: compactPreview.aspectRatio,
+                        maxHeight: compactPreview.maxHeight,
+                        overflow: 'hidden',
+                        borderRadius: '8px',
+                        backgroundColor: '#000',
+                    } : {
+                        position: 'relative',
+                        display: 'inline-block',
+                    }}
+                >
                     <video
                         ref={videoRef}
                         autoPlay
@@ -163,11 +190,15 @@ export function CameraCapture({
                                 videoRef.current.play().catch(console.error);
                             }
                         }}
-                        style={{
+                        style={compactPreview ? {
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        } : {
                             width: '100%',
                             maxWidth: '500px',
                             height: 'auto',
-                            borderRadius: '8px'
+                            borderRadius: '8px',
                         }}
                     />
                 </Box>

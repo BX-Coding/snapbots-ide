@@ -187,6 +187,7 @@ export function JoinSession() {
                     <CameraCapture
                         onImageCaptured={handleImageCaptured}
                         facingMode="environment"
+                        compactPreview={{ aspectRatio: '4 / 3', maxHeight: '35vh' }}
                     />
                 </Stack>
             )}
