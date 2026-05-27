@@ -9,13 +9,15 @@ interface CameraCaptureProps {
     onClose?: () => void;
     showStartButton?: boolean;
     buttonSize?: number;
+    facingMode?: 'user' | 'environment';
 }
 
-export function CameraCapture({ 
-    onImageCaptured, 
-    onClose, 
+export function CameraCapture({
+    onImageCaptured,
+    onClose,
     showStartButton = true,
-    buttonSize = 80 
+    buttonSize = 80,
+    facingMode = 'user',
 }: CameraCaptureProps) {
     // Camera-related state
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -43,12 +45,12 @@ export function CameraCapture({
     const startCamera = useCallback(async () => {
         try {
             setCameraError(null);
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    facingMode: 'user'
-                } 
+                    facingMode: facingMode === 'environment' ? { ideal: 'environment' } : 'user',
+                }
             });
             setCameraStream(stream);
             setShowCamera(true);
@@ -57,7 +59,7 @@ export function CameraCapture({
             console.error('Error accessing camera:', err);
             setCameraError('Could not access camera. Please check permissions.');
         }
-    }, []);
+    }, [facingMode]);
 
     const stopCamera = useCallback(() => {
         if (cameraStream) {

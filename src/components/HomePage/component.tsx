@@ -18,6 +18,17 @@ const HomePage = () => {
     navigate('/app');
   };
 
+  const handleJoinSession = () => {
+    const raw = window.prompt('Enter 6-digit session code:');
+    if (!raw) return;
+    const code = raw.replace(/\D/g, '');
+    if (code.length !== 6) {
+      window.alert('Session codes are 6 digits.');
+      return;
+    }
+    navigate(`/join/${code}`);
+  };
+
   return (
     <div className="homepage">
       <main>
@@ -27,6 +38,7 @@ const HomePage = () => {
           <div className="hero-buttons">
             <Link to="/app" className="cta-button">Launch App</Link>
             <button onClick={handleLaunchSoccer} className="cta-button soccer-button">Launch Soccer Game</button>
+            <button onClick={handleJoinSession} className="cta-button">Join a Session</button>
           </div>
         </section>
 
@@ -91,6 +103,7 @@ const HomePage = () => {
           <div className="hero-buttons">
             <Link to="/app" className="cta-button">Launch App</Link>
             <button onClick={handleLaunchSoccer} className="cta-button soccer-button">Launch Soccer Game</button>
+            <button onClick={handleJoinSession} className="cta-button">Join a Session</button>
           </div>
         </section>
       </main>

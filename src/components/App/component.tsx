@@ -31,6 +31,7 @@ import { Thread } from "../EditorPane/types";
 import useThreadAutoSave from "./useThreadAutoSave";
 import useMonitorProjectChange from "./useMonitorProjectChange";
 import useInitializedVm from "./useInitializedVm";
+import { useSnapbotSessionListener } from "../../hooks/useSnapbotSession";
 import { ModalSelector } from "../ModalSelector";
 
 import { useProjectActions } from "../../hooks/useProjectActions";
@@ -43,6 +44,7 @@ import PatchFunctionJson from "../../assets/patch-api.json";
 import Popover from "@mui/material/Popover";
 import HomePage from "../HomePage";
 import { SnapBotMode } from "../SnapBotMode";
+import { JoinSession, JoinCodeEntry } from "../JoinSession";
 
 interface Parameter {
   [key: string]: string;
@@ -96,6 +98,9 @@ const PatchApp = () => {
 
   useThreadAutoSave(patchVM, saveTargetThreads, editorTab);
   useMonitorProjectChange(setProjectChanged, [targetIds]);
+  // Always-on multi-device session listener: resumes any saved session and auto-applies
+  // new submissions even when the HostSessionPanel dialog is closed.
+  useSnapbotSessionListener();
 
   const variant = "outlined";
 
@@ -262,6 +267,8 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/app" element={<PatchApp />} />
         <Route path="/app/*" element={<PatchApp />} />
+        <Route path="/join" element={<JoinCodeEntry />} />
+        <Route path="/join/:code" element={<JoinSession />} />
         {/* Redirect old paths to the new /app path */}
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>

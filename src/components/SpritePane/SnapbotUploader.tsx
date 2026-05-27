@@ -1,35 +1,21 @@
 import React, { useState } from 'react';
 import { Box, Button, Typography, CircularProgress, Stepper, Step, StepLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useAddSprite } from "./onAddSpriteHandler";
-import { 
-    sendImageForProcessing, 
-    parseCodeFromResponse, 
-    convertFileToBase64 
+import {
+    sendImageForProcessing,
+    convertFileToBase64
 } from '../../lib/snapbotModalService';
+import {
+    applySnapbotResponse,
+    useApplySnapbotResponseDeps,
+    SnapbotServerResponse,
+} from '../../lib/applySnapbotResponse';
 import usePatchStore from '../../store';
-import { sprites } from "../../assets/sprites";
-import { sounds } from "../../assets/sounds";
-import { useCostumeHandlers } from "../../hooks/useCostumeUploadHandlers";
-import { useSoundHandlers } from "../../hooks/useSoundUploadHandlers";
-import { useEditingTarget } from "../../hooks/useEditingTarget";
-import { addImageToSprite, setDisplayImage, StateImageDisplay } from '../ImageDisplay';
 import { CameraCapture } from './CameraCapture';
 import { ImageCropper } from './ImageCropper';
 
 interface SnapbotUploaderProps {
     onClose: () => void;
-}
-
-// Define the server response type
-interface ServerResponse {
-    status: string;
-    code?: string;
-    costumes?: string[];
-    sounds?: string[];
-    name?: string;
-    global_vars?: Record<string, any>;
-    diagram_images?: Record<string, string>; // Map of state names to base64 images
 }
 
 
@@ -46,79 +32,13 @@ export function SnapbotUploader({ onClose }: SnapbotUploaderProps) {
     const [originalImage, setOriginalImage] = useState<string | null>(null); // Uncropped image for cropper
     const [isCropped, setIsCropped] = useState(false); // Track if image has been cropped
     
-    const { onAddSprite, setSnapbotSpriteCode } = useAddSprite();
-    const patchVM = usePatchStore((state) => state.patchVM);
+    const applyDeps = useApplySnapbotResponseDeps();
+    const { onAddSprite, patchVM, setSnapbotSpriteCode } = applyDeps;
     const targetIds = usePatchStore((state) => state.targetIds);
     const globalVariables = usePatchStore((state) => state.globalVariables);
-    const setProjectChanged = usePatchStore((state) => state.setProjectChanged);
-    const setGlobalVariable = usePatchStore((state) => state.setGlobalVariable);
-    const { handleAddSoundToEditingTarget } = useSoundHandlers();
-    const { handleAddCostumesToEditingTarget } = useCostumeHandlers();
-    const setCostumes = usePatchStore((state) => state.setCostumes);
-    const setSelectedCostumeIndex = usePatchStore((state) => state.setSelectedCostumeIndex);
-    
+
     // Steps for the stepper
     const steps = ['Upload Image', 'Process Image', 'Generate Code', 'Create Sprite'];
-
-    // Function to add a kick thread to the SoccerBall sprite in soccer mode
-    const addKickThreadToSoccerBall = async (newSpriteName: string) => {
-        try {
-            // Find the SoccerBall target
-            const allTargets = patchVM.getAllRenderedTargets();
-            const soccerBallTarget = allTargets.find((target: any) => target.sprite?.name === 'SoccerBall');
-            
-            if (!soccerBallTarget) {
-                console.warn('SoccerBall sprite not found, skipping kick thread creation');
-                return;
-            }
-
-            console.log(`Adding kick thread for ${newSpriteName} to SoccerBall`);
-
-            // Generate the kick script with the new sprite's name
-            const kickScript = `import math
-import time
-
-spriteName = "${newSpriteName}"
-kickDistanceThreshold = 60
-kickForce = 10000
-
-kickerX = getAttributeOf(spriteName, 'x position')
-kickerY = getAttributeOf(spriteName, 'y position')
-
-ballX = getX()
-ballY = getY()
-
-distance = ((kickerX - ballX) ** 2 + (kickerY - ballY) ** 2) ** 0.5
-
-lastKickedTime = time.time()
-
-if (distance < kickDistanceThreshold):
-  # the ball should be kicked
-  angleToKicker = math.atan2(kickerY - ballY, kickerX - ballX)
-
-  # stop all prior velocity
-  ballXVel = 0
-  ballYVel = 0
-  
-  ballXAcc = math.cos(angleToKicker) * kickForce * -1
-  ballYAcc = math.sin(angleToKicker) * kickForce * -1`;
-
-            // Add a new thread to the SoccerBall sprite
-            const broadcastMessage = `${newSpriteName}_kick`;
-            const threadId = await soccerBallTarget.addThread("", "event_whenbroadcastreceived");
-            
-            // Set the broadcast message option
-            const thread = soccerBallTarget.getThread(threadId);
-            if (thread) {
-                thread.updateThreadTriggerEventOption(broadcastMessage);
-                thread.displayName = `${newSpriteName} Kick`;
-                thread.updateThreadScript(kickScript);
-                console.log(`Successfully added kick thread for ${newSpriteName} with broadcast: ${broadcastMessage}`);
-            }
-        } catch (error) {
-            console.error('Error adding kick thread to SoccerBall:', error);
-        }
-    };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -216,10 +136,10 @@ if (distance < kickDistanceThreshold):
                 const TESTING_MODE = false;
 
                 try {
-                    let serverResponse: ServerResponse | null = null;
+                    let serverResponse: SnapbotServerResponse;
                     if (!TESTING_MODE) {
                         serverResponse = await sendImageForProcessing(
-                            base64Image, 
+                            base64Image,
                             newTargetId,
                             spriteNames,
                             globalVarsMap
@@ -242,161 +162,10 @@ if (distance < kickDistanceThreshold):
                         };
                     }
 
-                    // Create a global variable for the current state
-                    const strippedTargetId = newTargetId.replace(/[^a-zA-Z0-9]/g, '');
-                    const stateVarName = `curr_state_${strippedTargetId}`;
-                    // Set default state to "start" or first state from diagram if available
-                    let startingState = "start";
-                    if (serverResponse && 
-                        serverResponse.status === 'success' && 
-                        serverResponse.diagram_images && 
-                        Object.keys(serverResponse.diagram_images).length > 0) {
-                        startingState = Object.keys(serverResponse.diagram_images)[0];
-                    }
-                    // Create the global variable
-                    patchVM.updateGlobalVariable(stateVarName, startingState);
-                    usePatchStore.getState().setGlobalVariable(stateVarName, startingState);
-
-                    let generatedCode = '';
-    
-                    // Use the generated code or fallback to the default
-                    if (serverResponse && serverResponse.status === 'success' && serverResponse.code) {
-                        const parsedCode = parseCodeFromResponse(serverResponse.code);
-                        if (parsedCode) {
-                            generatedCode = parsedCode;
-                        }
-                    }
-
-                    // Process diagram images if available
-                    if (serverResponse && 
-                        serverResponse.status === 'success' && 
-                        serverResponse.diagram_images && 
-                        Object.keys(serverResponse.diagram_images).length > 0) {
-                        
-                        setProcessingStatus('Processing diagram images...');
-                        
-                        // Add all images to the image display for the new sprite
-                        const stateNames = Object.keys(serverResponse.diagram_images);
-                        stateNames.forEach(stateName => {
-                            // Check if the image is already a data URL or needs the prefix
-                            let base64Image = serverResponse?.diagram_images![stateName] || "";
-                            if (!base64Image.startsWith('data:')) {
-                                base64Image = "data:image/png;base64," + base64Image;
-                            }
-                            
-                            if (base64Image) {
-                                // Use addImageToSprite to ensure the images are associated with the correct target
-                                addImageToSprite(newTargetId, stateName, base64Image);
-                            }
-                        });
-                        
-                        // Set the first image as the currently displayed one
-                        if (stateNames.length > 0) {
-                            const firstStateName = stateNames[0];
-                            
-                            // Pass both targetId and imageKey to setDisplayImage
-                            setDisplayImage(newTargetId, firstStateName);
-                            
-                            // We've added state-images that can now be displayed 
-                            // by the StateImageDisplay component automatically.
-                            // The StateImageDisplay component will look up the current
-                            // state in the global variables and display the corresponding image.
-                            
-                            console.log(`Added ${stateNames.length} state images for sprite ${newTargetId}`);
-                        }
-                    }
-                    
-                    // Set the code for the Snapbot sprite
                     setActiveStep(3);
-                    setProcessingStatus('Applying generated code to sprite...');
-                    await setSnapbotSpriteCode(newTargetId, generatedCode);
-
-                    // Set the sprite name from the payload if available
-                    if (serverResponse && serverResponse.status === 'success') {
-                        // Set the sprite name if available
-                        if (serverResponse.name) {
-                            setProcessingStatus('Setting sprite name...');
-                            patchVM.renameSprite(newTargetId, serverResponse.name);
-                            
-                            // In soccer mode, add a kick thread to the SoccerBall sprite
-                            if (snapbotMode === 'soccer') {
-                                setProcessingStatus('Adding kick thread to SoccerBall...');
-                                await addKickThreadToSoccerBall(serverResponse.name);
-                            }
-                        }
-                        
-                        // Add global variables from server response if available
-                        if (serverResponse.global_vars) {
-                            setProcessingStatus('Adding global variables...');
-                            Object.entries(serverResponse.global_vars).forEach(([name, value]) => {
-                                patchVM.updateGlobalVariable(name, value);
-                                usePatchStore.getState().setGlobalVariable(name, value as string | number | boolean);
-                            });
-                        }
-                        
-                        // Add costumes if available
-                        if (serverResponse.costumes && serverResponse.costumes.length > 0) {
-                            setProcessingStatus('Adding costumes to sprite...');
-                            
-                            // Create an array of promises for adding costumes
-                            const costumePromises = [];
-                            
-                            for (const costumeName of serverResponse.costumes) {
-                                try {
-                                    console.log(`Adding costume: ${costumeName}`);
-                                    // Find the costume in the built-in sprites
-                                    const costumeAsset = sprites.find(sprite => 
-                                        sprite.costumes.some(costume => costume.name === costumeName)
-                                    )?.costumes.find(costume => costume.name === costumeName);
-                                    
-                                    if (costumeAsset) {
-                                        console.log(`Found costume ${costumeName} in library`);
-                                        // Add to promises instead of awaiting immediately
-                                        costumePromises.push(handleAddCostumesToEditingTarget([costumeAsset], true));
-                                    } else {
-                                        console.error(`Costume not found: ${costumeName}`);
-                                    }
-                                } catch (error) {
-                                    console.error(`Failed to add costume ${costumeName}:`, error);
-                                }
-                            }
-                            
-                            setSelectedCostumeIndex(patchVM.editingTarget.currentCostume);
-                            // remove the first costume from the editing target
-                            patchVM.editingTarget.sprite.costumes.splice(0, 1);
-                            console.log("Editing target costumes after operations:", patchVM.editingTarget.sprite.costumes);
-
-                        }
-                        
-                        // Add sounds if available
-                        if (serverResponse.sounds && serverResponse.sounds.length > 0) {
-                            setProcessingStatus('Adding sounds to sprite...');
-                            
-                            for (const soundName of serverResponse.sounds) {
-                                try {
-                                    console.log(`Adding sound: ${soundName}`);
-                                    // Find the sound in the built-in sounds
-                                    const soundAsset = sounds.find(sound => sound.name === soundName);
-                                    
-                                    if (soundAsset) {
-                                        console.log(`Found sound ${soundName} in library`);
-                                        await handleAddSoundToEditingTarget(soundAsset, true);
-                                    } else {
-                                        console.error(`Sound not found: ${soundName}`);
-                                    }
-                                } catch (error) {
-                                    console.error(`Failed to add sound ${soundName}:`, error);
-                                }
-                            }
-                        }
-
-                        //  move the sprite to a random position in the middle of the stage on play
-                        patchVM.editingTarget.x = Math.random() * 200 - 100;
-                        patchVM.editingTarget.y = Math.random() * 200 - 100;
-                    }
-                    
-                    setProjectChanged(true);
-                    // onClose();
+                    await applySnapbotResponse(serverResponse, newTargetId, applyDeps, {
+                        onStatus: setProcessingStatus,
+                    });
                 } catch (error) {
                     console.error('Error with Modal server:', error);
                     // Fallback to default code if Modal server fails

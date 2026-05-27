@@ -13,6 +13,7 @@ export default {
   entry: path.join(__dirname, "src", "index.tsx"),
   output: {
     path: path.join(__dirname, "/build"),
+    publicPath: "/",
   },
   mode: "development",
   devServer: {
@@ -34,6 +35,15 @@ export default {
       '/api/modal/soccer': {
         target: 'https://eucalyptus--snapbot-soccer.modal.run/',
         pathRewrite: { '^/api/modal/soccer.js': '/generation' },
+        changeOrigin: true,
+        secure: false,
+      },
+      // Multi-device session endpoints. The Modal session app (TBD by backend; default
+      // assumption is `snapbot-session`) handles POST /session, GET /session/{id},
+      // POST /session/{id}/end, POST /session/{id}/submit, GET /session/{id}/submission/{subId}.
+      '/api/modal/session': {
+        target: process.env.SNAPBOT_SESSION_MODAL_ENDPOINT || 'https://eucalyptus--snapbot-session.modal.run/',
+        pathRewrite: { '^/api/modal/session': '/session' },
         changeOrigin: true,
         secure: false,
       }
