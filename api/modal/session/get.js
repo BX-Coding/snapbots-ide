@@ -1,4 +1,4 @@
-import { forwardToModal } from '../../../_lib/modalSessionProxy.js';
+import { forwardToModal } from '../../_lib/modalSessionProxy.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;

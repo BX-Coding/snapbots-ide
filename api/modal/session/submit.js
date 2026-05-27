@@ -1,4 +1,10 @@
-import { forwardToModal } from '../../../_lib/modalSessionProxy.js';
+import { forwardToModal } from '../../_lib/modalSessionProxy.js';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -10,7 +16,7 @@ export default async function handler(req, res) {
   }
   return forwardToModal(req, res, {
     method: 'POST',
-    subpath: `session/${encodeURIComponent(id)}/end`,
-    noBody: true,
+    subpath: `session/${encodeURIComponent(id)}/submit`,
+    passThroughRawBody: true,
   });
 }
