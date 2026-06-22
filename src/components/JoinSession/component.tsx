@@ -6,10 +6,12 @@ import {
     Button,
     CircularProgress,
     Container,
+    IconButton,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 import { CameraCapture } from '../SpritePane/CameraCapture';
 import { ImageCropper } from '../SpritePane/ImageCropper';
@@ -24,6 +26,7 @@ import {
 type Phase =
     | { kind: 'loading' }
     | { kind: 'invalid'; message: string }
+    | { kind: 'landing' }
     | { kind: 'name-entry' }
     | { kind: 'capture' }
     | { kind: 'crop'; imageSrc: string }
@@ -35,9 +38,18 @@ type Phase =
 
 const NAME_STORAGE_KEY_PREFIX = 'snapbotJoinerName:';
 
-export function JoinSession() {
+export interface JoinSessionProps {
+    /** When set, use this session id instead of the :code route param (showcase slug flow). */
+    sessionIdOverride?: string;
+    /** Show a big "take a photo" landing screen before the capture flow. */
+    landing?: boolean;
+    /** Optional heading; defaults to "SnapBots — Session {id}". */
+    heading?: string;
+}
+
+export function JoinSession({ sessionIdOverride, landing, heading }: JoinSessionProps = {}) {
     const { code } = useParams<{ code: string }>();
-    const sessionId = code ?? '';
+    const sessionId = sessionIdOverride ?? code ?? '';
 
     const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
     const [nameDraft, setNameDraft] = useState('');
@@ -63,6 +75,10 @@ export function JoinSession() {
                 if (saved) {
                     setSubmitterName(saved);
                     setNameDraft(saved);
+                }
+                if (landing) {
+                    setPhase({ kind: 'landing' });
+                } else if (saved) {
                     setPhase({ kind: 'capture' });
                 } else {
                     setPhase({ kind: 'name-entry' });
@@ -76,7 +92,12 @@ export function JoinSession() {
             }
         })();
         return () => { cancelled = true; };
-    }, [sessionId]);
+    }, [sessionId, landing]);
+
+    const handleStartFromLanding = () => {
+        const saved = sessionStorage.getItem(NAME_STORAGE_KEY_PREFIX + sessionId);
+        setPhase(saved ? { kind: 'capture' } : { kind: 'name-entry' });
+    };
 
     // Cleanup any active poller on unmount.
     useEffect(() => () => { pollerRef.current?.(); }, []);
@@ -142,7 +163,7 @@ export function JoinSession() {
     return (
         <Container maxWidth="sm" sx={{ py: 3 }}>
             <Typography variant="h5" gutterBottom>
-                SnapBots — Session {sessionId}
+                {heading ?? `SnapBots — Session ${sessionId}`}
             </Typography>
 
             {phase.kind === 'loading' && (
@@ -154,6 +175,29 @@ export function JoinSession() {
 
             {phase.kind === 'invalid' && (
                 <Alert severity="error">{phase.message}</Alert>
+            )}
+
+            {phase.kind === 'landing' && (
+                <Stack spacing={3} alignItems="center" sx={{ py: 4 }}>
+                    <Typography variant="body1" align="center" color="text.secondary">
+                        Draw a robot on paper, then tap to photograph it and watch your
+                        character come alive on the big screen.
+                    </Typography>
+                    <IconButton
+                        onClick={handleStartFromLanding}
+                        aria-label="Take a photo of your diagram"
+                        sx={{
+                            width: 160,
+                            height: 160,
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText',
+                            '&:hover': { bgcolor: 'primary.dark' },
+                        }}
+                    >
+                        <PhotoCameraIcon sx={{ fontSize: 88 }} />
+                    </IconButton>
+                    <Typography variant="h6">Take a photo</Typography>
+                </Stack>
             )}
 
             {phase.kind === 'name-entry' && (

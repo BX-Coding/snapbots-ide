@@ -45,6 +45,7 @@ import Popover from "@mui/material/Popover";
 import HomePage from "../HomePage";
 import { SnapBotMode } from "../SnapBotMode";
 import { JoinSession, JoinCodeEntry } from "../JoinSession";
+import { Asee2026Capture, ShowcaseController } from "../Asee2026";
 
 interface Parameter {
   [key: string]: string;
@@ -269,6 +270,9 @@ const App = () => {
         <Route path="/app/*" element={<PatchApp />} />
         <Route path="/join" element={<JoinCodeEntry />} />
         <Route path="/join/:code" element={<JoinSession />} />
+        {/* ASEE 2026 showcase: code-free audience capture + presenter phone controller */}
+        <Route path="/asee2026" element={<Asee2026Capture />} />
+        <Route path="/asee2026/control" element={<ShowcaseController />} />
         {/* Redirect old paths to the new /app path */}
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>

@@ -16,7 +16,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { QRCodeSVG } from 'qrcode.react';
 
-import { buildJoinUrl, SubmissionStatus } from '../../lib/snapbotSession';
+import {
+    buildJoinUrl,
+    buildShowcaseUrl,
+    buildControllerUrl,
+    getHostToken,
+    SHOWCASE_SLUG,
+    SubmissionStatus,
+} from '../../lib/snapbotSession';
 import { useSnapbotSessionStore } from '../../store/snapbotSessionStore';
 import { useSnapbotSessionActions } from '../../hooks/useSnapbotSession';
 
@@ -49,7 +56,16 @@ export function HostSessionPanel({ onClose }: HostSessionPanelProps) {
         navigator.clipboard?.writeText(buildJoinUrl(session.session_id)).catch(() => {});
     };
 
+    const handleStartShowcase = () => {
+        // The ASEE showcase always runs in simulation mode; claim the fixed slug so
+        // snapbots.org/asee2026 points at this session.
+        localStorage.setItem('snapbotMode', 'simulation');
+        startSession(SHOWCASE_SLUG);
+    };
+
     const isLoading = initializing || starting;
+    const isShowcase = session?.slug === SHOWCASE_SLUG;
+    const hostToken = session ? getHostToken(session.session_id) : null;
 
     return (
         <Box sx={{ p: 3, position: 'relative', minWidth: 360 }}>
@@ -79,6 +95,9 @@ export function HostSessionPanel({ onClose }: HostSessionPanelProps) {
                     </Typography>
                     <Button variant="contained" onClick={() => startSession()}>
                         Start Session
+                    </Button>
+                    <Button variant="outlined" onClick={handleStartShowcase}>
+                        Start ASEE Showcase
                     </Button>
                 </Stack>
             )}
@@ -113,6 +132,30 @@ export function HostSessionPanel({ onClose }: HostSessionPanelProps) {
                                     Copy link
                                 </Button>
                             </Box>
+                        </Box>
+                    )}
+
+                    {session.status === 'active' && isShowcase && (
+                        <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 1 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                                ASEE Showcase links
+                            </Typography>
+                            <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap' }}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <QRCodeSVG value={buildShowcaseUrl()} size={120} />
+                                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                        Audience (snapbots.org/asee2026)
+                                    </Typography>
+                                </Box>
+                                {hostToken && (
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <QRCodeSVG value={buildControllerUrl(hostToken)} size={120} />
+                                        <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                            Controller — scan with YOUR phone only
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Stack>
                         </Box>
                     )}
 

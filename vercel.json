@@ -4,6 +4,18 @@
   "framework": null,
   "rewrites": [
     {
+      "source": "/api/modal/session/by-slug/:slug",
+      "destination": "/api/modal/session/by-slug?slug=:slug"
+    },
+    {
+      "source": "/api/modal/session/:id/command/:cmdId/ack",
+      "destination": "/api/modal/session/ack?id=:id&cmdId=:cmdId"
+    },
+    {
+      "source": "/api/modal/session/:id/command",
+      "destination": "/api/modal/session/command?id=:id"
+    },
+    {
       "source": "/api/modal/session/:id/submission/:subId",
       "destination": "/api/modal/session/submission?id=:id&subId=:subId"
     },

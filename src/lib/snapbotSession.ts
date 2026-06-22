@@ -4,6 +4,19 @@ export type SessionStatus = "active" | "ended" | "expired";
 export type SubmissionStatus = "queued" | "processing" | "done" | "failed";
 export type SnapbotMode = "simulation" | "hybrid" | "soccer";
 
+/** Remote-control commands the controller phone issues against the live session. */
+export type CommandType = "run" | "stop" | "delete";
+export type CommandStatus = "pending" | "consumed";
+
+export interface SessionCommand {
+    command_id: string;
+    type: CommandType;
+    /** Required for `delete`: the submission whose generated character should be removed. */
+    target_submission_id?: string | null;
+    status: CommandStatus;
+    created_at: string;
+}
+
 export interface SubmissionSummary {
     submission_id: string;
     submitter_name: string;
@@ -18,6 +31,10 @@ export interface SessionRecord {
     created_at: string;
     last_activity_at?: string;
     submissions: SubmissionSummary[];
+    /** Slug this session was registered under (e.g. "asee2026"), if any. */
+    slug?: string;
+    /** Pending remote-control commands the host should drain and ack. */
+    commands?: SessionCommand[];
 }
 
 export interface CreateSessionResponse {
@@ -73,11 +90,14 @@ async function parseError(res: Response): Promise<SnapbotSessionError> {
     return err;
 }
 
-export async function createSession(mode: SnapbotMode): Promise<CreateSessionResponse> {
+export async function createSession(
+    mode: SnapbotMode,
+    slug?: string
+): Promise<CreateSessionResponse> {
     const res = await fetch(BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify(slug ? { mode, slug } : { mode }),
     });
     if (!res.ok) throw await parseError(res);
     const data: CreateSessionResponse = await res.json();
@@ -85,6 +105,48 @@ export async function createSession(mode: SnapbotMode): Promise<CreateSessionRes
         storeHostToken(data.session_id, data.host_token);
     }
     return data;
+}
+
+/** Resolve a named session (e.g. the fixed "asee2026" showcase) to its live record. */
+export async function getSessionBySlug(slug: string): Promise<SessionRecord> {
+    const res = await fetch(`${BASE}/by-slug/${encodeURIComponent(slug)}`);
+    if (!res.ok) throw await parseError(res);
+    return res.json();
+}
+
+/**
+ * Issue a remote-control command against the session. Host-authenticated: the
+ * caller must hold the session's host_token (the controller phone receives it via
+ * the QR handoff and we persist it with storeHostToken). Mirrors endSession's auth.
+ */
+export async function postCommand(
+    sessionId: string,
+    command: { type: CommandType; target_submission_id?: string }
+): Promise<SessionCommand> {
+    const token = getHostToken(sessionId);
+    if (!token) {
+        throw Object.assign(new Error("No host token stored for this session"), {
+            code: "NO_HOST_TOKEN",
+        }) as SnapbotSessionError;
+    }
+    const res = await fetch(`${BASE}/${encodeURIComponent(sessionId)}/command`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(command),
+    });
+    if (!res.ok) throw await parseError(res);
+    return res.json();
+}
+
+/** Mark a command consumed so the host never re-executes it across reloads. */
+export async function ackCommand(sessionId: string, commandId: string): Promise<void> {
+    const token = getHostToken(sessionId);
+    if (!token) return; // best-effort; without a token we simply can't ack
+    const res = await fetch(
+        `${BASE}/${encodeURIComponent(sessionId)}/command/${encodeURIComponent(commandId)}/ack`,
+        { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) throw await parseError(res);
 }
 
 export async function endSession(sessionId: string): Promise<void> {
@@ -157,6 +219,8 @@ export interface SubscribeCallbacks {
     onNew?: (submission: SubmissionSummary) => void;
     onComplete?: (submission: SubmissionSummary) => void;
     onFailed?: (submission: SubmissionSummary) => void;
+    /** Pending remote-control commands seen this tick (the host drains + acks them). */
+    onCommands?: (commands: SessionCommand[]) => void;
     onError?: (error: SnapbotSessionError) => void;
 }
 
@@ -179,6 +243,10 @@ export function subscribeToSubmissions(
         try {
             const session = await getSession(sessionId);
             cb.onSession?.(session);
+            if (session.commands && session.commands.length) {
+                const pending = session.commands.filter((c) => c.status !== "consumed");
+                if (pending.length) cb.onCommands?.(pending);
+            }
             for (const sub of session.submissions) {
                 if (!seenIds.has(sub.submission_id)) {
                     seenIds.add(sub.submission_id);
@@ -243,4 +311,25 @@ export function pollSubmissionStatus(
 export function buildJoinUrl(sessionId: string): string {
     if (typeof window === "undefined") return `/join/${sessionId}`;
     return `${window.location.origin}/join/${sessionId}`;
+}
+
+/** Slug used to publish the ASEE showcase under a fixed, code-free link. */
+export const SHOWCASE_SLUG = "asee2026";
+
+/** Public audience link — points at whatever session currently holds the showcase slug. */
+export function buildShowcaseUrl(): string {
+    const path = `/${SHOWCASE_SLUG}`;
+    if (typeof window === "undefined") return path;
+    return `${window.location.origin}${path}`;
+}
+
+/**
+ * Presenter controller link. The host_token rides in the URL fragment (`#t=`) so it
+ * is never sent to any server — the controller phone reads it and persists it locally.
+ * Keep this QR on the laptop only; anyone who scans it can drive the scene.
+ */
+export function buildControllerUrl(hostToken: string): string {
+    const path = `/${SHOWCASE_SLUG}/control#t=${encodeURIComponent(hostToken)}`;
+    if (typeof window === "undefined") return path;
+    return `${window.location.origin}${path}`;
 }
